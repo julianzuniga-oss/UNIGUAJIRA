@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Plataforma de Retos ANEIAP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0B3C5D;
+      --secondary: #328CC1;
+      --accent: #D9B310;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --light: #F4F6F8;
+      --dark: #1F1F1F;
+      --ranking-1: #FFD700;
+      --ranking-2: #C0C0C0;
+      --ranking-3: #CD7F32;
+      --ranking-gradient-start: #667eea;
+      --ranking-gradient-end: #764ba2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    #userInfo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    .btn-logout {
+      background: var(--danger);
+      border: none;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    main {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    }
+
+    .hidden { display: none !important; }
+
+    .login-container {
+      max-width: 450px;
+      margin: 5rem auto;
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.9rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(50, 140, 193, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+
+    .btn-primary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      width: auto;
+      padding: 0.7rem 1.5rem;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      width: auto;
+      padding: 0.7rem 1.5rem;
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: var(--dark);
+      width: auto;
+      padding: 0.7rem 1.5rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0;
+    }
+
+    .nav-tab {
+      padding: 1rem 2rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 600;
+      color: #666;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .nav-tab.active {
+      color: var(--secondary);
+    }
+
+    .nav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--secondary);
+    }
+
+    .nav-tab:hover {
+      color: var(--secondary);
+    }
+
+    .retos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .reto-card {
+      border-left: 5px solid var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .reto-card h3 {
+      color: var(--primary);
+      margin-bottom: 0.8rem;
+      font-size: 1.2rem;
+    }
+
+    .reto-card p {
+      color: #666;
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .reto-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-puntaje {
+      background: var(--accent);
+      color: white;
+    }
+
+    .badge-fecha {
+      background: #e3f2fd;
+      color: var(--secondary);
+    }
+
+    .badge-success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .badge-danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .badge-global {
+      background: #e1bee7;
+      color: #6a1b9a;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background: var(--light);
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    tr:hover {
+      background: #f9f9f9;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: var(--light);
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .ranking-item:hover {
+      transform: translateX(10px);
+      background: #e3f2fd;
+    }
+
+    .ranking-position {
+      font-size: 1.5rem;
+      font-weight: 700;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+    }
+
+    .ranking-info {
+      flex: 1;
+      margin-left: 1rem;
+    }
+
+    .ranking-name {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .ranking-score {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .progress-bar-container {
+      background: #e0e0e0;
+      border-radius: 10px;
+      height: 30px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ranking-gradient-start), var(--ranking-gradient-end));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      transition: width 0.5s;
+    }
+
+    .ranking-position.gold {
+      background: var(--ranking-1);
+      color: var(--dark);
+    }
+
+    .ranking-position.silver {
+      background: var(--ranking-2);
+      color: var(--dark);
+    }
+
+    .ranking-position.bronze {
+      background: var(--ranking-3);
+      color: white;
+    }
+
+    .badge-direccion {
+      background: #b3e5fc;
+      color: #01579b;
+    }
+
+    .reto-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn-edit {
+      background: var(--secondary);
+      color: white;
+      width: auto;
+      padding: 0.7rem 1.5rem;
+    }
+
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-icon:hover {
+      transform: scale(1.1);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      animation: fadeIn 0.3s;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h2 {
+      color: var(--primary);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .btn-close {
+      background: #6c757d;
+      color: white;
+      width: auto;
+      padding: 0.7rem 1.5rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--secondary);
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--secondary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .ranking-selector {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .ranking-selector button {
+      padding: 0.7rem 1.5rem;
+      border: 2px solid var(--secondary);
+      background: white;
+      color: var(--secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .ranking-selector button.active {
+      background: var(--secondary);
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #999;
+      font-size: 0.9rem;
+      border-top: 1px solid #e0e0e0;
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .nav-tabs {
+        overflow-x: auto;
+      }
+
+      .retos-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Plataforma de Retos ANEIAP</h1>
+  <div id="userInfo"></div>
+</header>
+
+<main>
+  <!-- LOGIN -->
+  <section id="loginSection" class="login-container card">
+    <h2>Bienvenido</h2>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Ingresa con tu correo institucional y contraseña
+    </p>
+    <div class="form-group">
+      <label>Correo Institucional</label>
+      <input type="email" id="emailInput" placeholder="ejemplo@aneiap.co" />
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="passwordInput" placeholder="Ingresa tu contraseña" />
+    </div>
+    <button class="btn btn-primary" onclick="iniciarSesion()">Ingresar</button>
+    <div id="loginError"></div>
+  </section>
+
+  <!-- CAMBIO DE CONTRASEÑA -->
+  <section id="cambioPasswordSection" class="login-container card hidden">
+    <h2>Cambio de Contraseña Obligatorio</h2>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Es tu primer ingreso. Por favor, cambia tu contraseña.
+    </p>
+    <div class="form-group">
+      <label>Contraseña Actual</label>
+      <input type="password" id="passwordActual" />
+    </div>
+    <div class="form-group">
+      <label>Nueva Contraseña (mínimo 6 caracteres)</label>
+      <input type="password" id="passwordNueva" />
+    </div>
+    <div class="form-group">
+      <label>Confirmar Nueva Contraseña</label>
+      <input type="password" id="passwordConfirmar" />
+    </div>
+    <button class="btn btn-primary" onclick="cambiarPassword()">Cambiar Contraseña</button>
+    <div id="cambioPasswordError"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardSection" class="hidden">
+    <div class="nav-tabs" id="navTabs"></div>
+
+    <!-- TAB: MIS RETOS (Asociado) -->
+    <div id="tabMisRetos" class="tab-content hidden">
+      <div class="card">
+        <h2>Retos Activos</h2>
+        <div id="retosDisponibles" class="retos-grid"></div>
+      </div>
+
+      <div class="card">
+        <h2>Mis Evidencias</h2>
+        <div id="misEvidencias"></div>
+      </div>
+    </div>
+
+    <!-- TAB: VALIDAR EVIDENCIAS (Director) -->
+    <div id="tabValidarEvidencias" class="tab-content hidden">
+      <div class="card">
+        <h2>Evidencias Pendientes de Validación</h2>
+        <div id="evidenciasPendientes"></div>
+      </div>
+    </div>
+
+    <!-- TAB: GESTIÓN DE RETOS (Director) -->
+    <div id="tabGestionRetos" class="tab-content hidden">
+      <div class="card">
+        <h2>Gestión de Retos</h2>
+        <button class="btn btn-success" onclick="mostrarModalCrearReto()" title="Crear Nuevo Reto">+ Crear Nuevo Reto</button>
+        <div id="retosGestion" style="margin-top: 2rem;"></div>
+      </div>
+    </div>
+
+    <!-- TAB: GESTIÓN DE RETOS DEL PRESIDENTE (Global + por Dirección) -->
+    <div id="tabGestionRetosPresidente" class="tab-content hidden">
+      <div class="card">
+        <h2>Gestión de Retos</h2>
+        <button class="btn btn-success" onclick="mostrarModalCrearRetoPresidente()" title="Crear Nuevo Reto">+ Crear Nuevo Reto</button>
+        <div id="retosPresidenteGestion" style="margin-top: 2rem;"></div>
+      </div>
+    </div>
+
+    <!-- TAB: VALIDAR TODAS LAS EVIDENCIAS (Presidente) -->
+    <div id="tabValidarTodasEvidencias" class="tab-content hidden">
+      <div class="card">
+        <h2>Todas las Evidencias Pendientes</h2>
+        <div id="todasEvidenciasPendientes"></div>
+      </div>
+    </div>
+
+    <!-- TAB: RANKING -->
+    <div id="tabRanking" class="tab-content hidden">
+      <div class="card">
+        <h2>Ranking Capitular</h2>
+        <div class="ranking-selector">
+          <button class="active" onclick="cambiarTipoRanking('capitular', this)">Ranking Capitular</button>
+          <button onclick="cambiarTipoRanking('direccion', this)">Ranking por Dirección</button>
+        </div>
+        <div id="rankingContenido"></div>
+      </div>
+    </div>
+
+    <!-- TAB: PANEL ADMINISTRATIVO (Admin) -->
+    <div id="tabAdmin" class="tab-content hidden">
+      <div class="stats-grid" id="estadisticas"></div>
+
+      <div class="card">
+        <h2>Todos los Retos</h2>
+        <div id="todosRetos"></div>
+      </div>
+
+      <div class="card">
+        <h2>Todas las Evidencias</h2>
+        <div id="todasEvidencias"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL: SUBIR EVIDENCIA -->
+<div id="modalSubirEvidencia" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Subir Evidencia</h2>
+    </div>
+    <div class="form-group">
+      <label>Reto seleccionado:</label>
+      <p id="retoSeleccionado" style="font-weight: 600; color: var(--primary);"></p>
+    </div>
+    <div class="form-group">
+      <label>URL de la evidencia (Google Drive, enlace público)</label>
+      <input type="url" id="urlEvidencia" placeholder="https://drive.google.com/..." />
+      <small style="color: #666;">Asegúrate de que el enlace sea público o compartido</small>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-close" onclick="cerrarModal('modalSubirEvidencia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="subirEvidencia()">Subir Evidencia</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CREAR/EDITAR RETO -->
+<div id="modalCrearReto" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="tituloModalReto">Crear Nuevo Reto</h2>
+    </div>
+    <div class="form-group">
+      <label>Nombre del Reto</label>
+      <input type="text" id="nombreReto" placeholder="Ej: Asistir a capacitación" />
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <textarea id="descripcionReto" rows="3" placeholder="Describe el reto..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Puntaje</label>
+      <input type="number" id="puntajeReto" value="10" min="1" />
+    </div>
+    <div class="form-group">
+      <label>Fecha de Inicio</label>
+      <input type="date" id="fechaInicioReto" />
+    </div>
+    <div class="form-group">
+      <label>Fecha de Finalización</label>
+      <input type="date" id="fechaFinReto" />
+    </div>
+    <div class="form-group" id="grupoDestinoReto">
+      <label>Destino del Reto</label>
+      <select id="destinoReto">
+        <option value="global">Reto Global (todas las direcciones)</option>
+        <!-- Las opciones de dirección se cargan dinámicamente -->
+      </select>
+    </div>
+    <input type="hidden" id="esRetoGlobal" value="false" />
+    <input type="hidden" id="idRetoEditar" value="" />
+    <div class="modal-footer">
+      <button class="btn btn-close" onclick="cerrarModal('modalCrearReto')">Cancelar</button>
+      <button class="btn btn-success" id="btnGuardarReto" onclick="guardarReto()">Crear Reto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VALIDAR EVIDENCIA -->
+<div id="modalValidarEvidencia" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Validar Evidencia</h2>
+    </div>
+    <div id="detalleEvidencia"></div>
+    <div class="form-group">
+      <label>Observaciones</label>
+      <textarea id="observacionValidacion" rows="3" placeholder="Comentarios sobre la evidencia..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-close" onclick="cerrarModal('modalValidarEvidencia')">Cancelar</button>
+      <button class="btn btn-danger" onclick="validarEvidencia(false)">Rechazar</button>
+      <button class="btn btn-success" onclick="validarEvidencia(true)">Aprobar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR DESACTIVACIÓN -->
+<div id="modalConfirmarDesactivar" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Confirmar Desactivación</h2>
+    </div>
+    <p style="color: #666; margin: 1rem 0;">¿Estás seguro de que deseas desactivar este reto?</p>
+    <div class="modal-footer">
+      <button class="btn btn-close" onclick="cerrarModal('modalConfirmarDesactivar')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarDesactivarReto()">Desactivar</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  ANEIAP - Capítulo ICESI - Plataforma de Retos 2025
+</footer>
+
+<script>
+  // Cargar direcciones en el select del modal
+  function cargarDireccionesEnSelect() {
+    google.script.run
+      .withSuccessHandler(function(direcciones) {
+        const select = document.getElementById('destinoReto');
+        // Mantener la opción "Global" siempre primera
+        select.innerHTML = '<option value="global">Reto Global (todas las direcciones)</option>';
+        direcciones.forEach(d => {
+          select.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+        });
+      })
+      .getDirecciones();
+  }
+
+  // Mostrar modal desde el contexto del Presidente
+  function mostrarModalCrearRetoPresidente() {
+    document.getElementById('tituloModalReto').textContent = 'Crear Nuevo Reto';
+    document.getElementById('btnGuardarReto').textContent = 'Crear Reto';
+    document.getElementById('nombreReto').value = '';
+    document.getElementById('descripcionReto').value = '';
+    document.getElementById('puntajeReto').value = '10';
+    document.getElementById('fechaInicioReto').value = '';
+    document.getElementById('fechaFinReto').value = '';
+    document.getElementById('idRetoEditar').value = '';
+
+    // Mostrar el selector de destino y cargarlo
+    document.getElementById('grupoDestinoReto').style.display = 'block';
+    document.getElementById('destinoReto').value = 'global';
+    cargarDireccionesEnSelect();
+
+    document.getElementById('modalCrearReto').classList.add('show');
+  }
+
+  // Cargar todos los retos (globales + de todas las direcciones) para el Presidente
+  function cargarRetosPresidente() {
+    const contenedor = document.getElementById('retosPresidenteGestion');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        if (retos.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos creados</p>';
+          return;
+        }
+
+        contenedor.innerHTML = '';
+        retos.forEach(reto => {
+          const div = document.createElement('div');
+          div.className = 'card reto-card';
+          const tipoLabel = reto.esGlobal
+            ? '<span class="badge badge-global">GLOBAL</span>'
+            : `<span class="badge badge-direccion">${reto.direccion}</span>`;
+
+          div.innerHTML = `
+            <h3>${reto.nombre} ${tipoLabel}</h3>
+            <p>${reto.descripcion}</p>
+            <div class="reto-info">
+              <span class="badge badge-puntaje">${reto.puntaje} pts</span>
+              <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
+            </div>
+            <div class="reto-actions">
+              <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarRetoPresidente('${reto.id}', ${reto.esGlobal})">
+                Editar
+              </button>
+              <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
+                Desactivar
+              </button>
+            </div>
+          `;
+          contenedor.appendChild(div);
+        });
+      })
+      .withFailureHandler(function() {
+        contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
+      })
+      .getTodosLosRetos();
+  }
+
+  // Editar reto desde el contexto del Presidente
+  function editarRetoPresidente(idReto, esGlobal) {
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        const reto = retos.find(r => r.id === idReto);
+        if (reto) {
+          document.getElementById('tituloModalReto').textContent = 'Editar Reto';
+          document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
+          document.getElementById('nombreReto').value = reto.nombre;
+          document.getElementById('descripcionReto').value = reto.descripcion;
+          document.getElementById('puntajeReto').value = reto.puntaje;
+          document.getElementById('fechaInicioReto').value = convertirFechaParaInput(reto.fechaInicio);
+          document.getElementById('fechaFinReto').value = convertirFechaParaInput(reto.fechaFin);
+          document.getElementById('idRetoEditar').value = idReto;
+
+          // Mostrar selector y pre-seleccionar
+          document.getElementById('grupoDestinoReto').style.display = 'block';
+          cargarDireccionesEnSelect();
+          // Esperar a que se carguen las opciones y luego seleccionar
+          setTimeout(() => {
+            document.getElementById('destinoReto').value = reto.esGlobal ? 'global' : reto.direccion;
+          }, 800);
+
+          document.getElementById('modalCrearReto').classList.add('show');
+        }
+      })
+      .getTodosLosRetos();
+  }
+
+
+  // Variables globales
+  let usuarioActual = null;
+  let retoSeleccionadoId = null;
+  let evidenciaSeleccionadaId = null;
+  let tipoRankingActual = 'capitular';
+  let retoADesactivar = null;
+  let operacionEnProceso = false;
+
+  // Funciones de control de botones
+  function deshabilitarBoton(boton, textoOriginal) {
+    if (!boton) return;
+    boton.disabled = true;
+    boton.style.opacity = '0.6';
+    boton.style.cursor = 'not-allowed';
+    boton.setAttribute('data-texto-original', textoOriginal || boton.textContent);
+    boton.textContent = 'Procesando...';
+  }
+
+  function habilitarBoton(boton) {
+    if (!boton) return;
+    boton.disabled = false;
+    boton.style.opacity = '1';
+    boton.style.cursor = 'pointer';
+    const textoOriginal = boton.getAttribute('data-texto-original');
+    if (textoOriginal) {
+      boton.textContent = textoOriginal;
+    }
+  }
+
+  function deshabilitarBotonesModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    const botones = modal.querySelectorAll('button:not(.btn-close)');
+    botones.forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+    });
+  }
+
+  function habilitarBotonesModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    const botones = modal.querySelectorAll('button');
+    botones.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    });
+  }
+
+  // Login
+  function iniciarSesion() {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+    
+    if (!email || !password) {
+      mostrarAlerta('loginError', 'Por favor ingresa tu correo y contraseña', 'error');
+      return;
+    }
+
+    mostrarCargando('loginError');
+    
+    google.script.run
+      .withSuccessHandler(respuestaLogin)
+      .withFailureHandler(errorLogin)
+      .loginUsuario(email, password);
+  }
+
+  function respuestaLogin(resultado) {
+    if (resultado.success) {
+      usuarioActual = resultado.usuario;
+      
+      if (resultado.usuario.requiereCambioPassword) {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('cambioPasswordSection').classList.remove('hidden');
+        return;
+      }
+      
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+      
+      document.getElementById('userInfo').innerHTML = `
+        <div class="user-badge">${usuarioActual.nombre}</div>
+        <div class="user-badge">${usuarioActual.rol}</div>
+        <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+      `;
+      
+      configurarInterfazSegunRol();
+      cargarDatos();
+    } else {
+      mostrarAlerta('loginError', resultado.message, 'error');
+    }
+  }
+
+  function errorLogin(error) {
+    mostrarAlerta('loginError', 'Error al conectar con el servidor: ' + error.message, 'error');
+  }
+
+  function cambiarPassword() {
+    const passwordActual = document.getElementById('passwordActual').value.trim();
+    const passwordNueva = document.getElementById('passwordNueva').value.trim();
+    const passwordConfirmar = document.getElementById('passwordConfirmar').value.trim();
+    
+    if (!passwordActual || !passwordNueva || !passwordConfirmar) {
+      mostrarAlerta('cambioPasswordError', 'Por favor completa todos los campos', 'error');
+      return;
+    }
+    
+    if (passwordNueva !== passwordConfirmar) {
+      mostrarAlerta('cambioPasswordError', 'Las contraseñas no coinciden', 'error');
+      return;
+    }
+    
+    if (passwordNueva.length < 6) {
+      mostrarAlerta('cambioPasswordError', 'La contraseña debe tener al menos 6 caracteres', 'error');
+      return;
+    }
+
+    mostrarCargando('cambioPasswordError');
+    
+    google.script.run
+      .withSuccessHandler(function(resultado) {
+        if (resultado.success) {
+          mostrarAlerta('cambioPasswordError', resultado.message, 'success');
+          setTimeout(function() {
+            document.getElementById('cambioPasswordSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            
+            document.getElementById('userInfo').innerHTML = `
+              <div class="user-badge">${usuarioActual.nombre}</div>
+              <div class="user-badge">${usuarioActual.rol}</div>
+              <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+            `;
+            
+            configurarInterfazSegunRol();
+            cargarDatos();
+          }, 1500);
+        } else {
+          mostrarAlerta('cambioPasswordError', resultado.message, 'error');
+        }
+      })
+      .withFailureHandler(function(error) {
+        mostrarAlerta('cambioPasswordError', 'Error al cambiar contraseña', 'error');
+      })
+      .cambiarPassword(usuarioActual.email, passwordActual, passwordNueva);
+  }
+
+  function cerrarSesion() {
+    location.reload();
+  }
+
+  function configurarInterfazSegunRol() {
+    const navTabs = document.getElementById('navTabs');
+    navTabs.innerHTML = '';
+
+    if (usuarioActual.rol === 'Asociado') {
+      navTabs.innerHTML = `
+        <button class="nav-tab active" onclick="cambiarTab('tabMisRetos')">Mis Retos</button>
+        <button class="nav-tab" onclick="cambiarTab('tabRanking')">Ranking</button>
+      `;
+      cambiarTab('tabMisRetos');
+    } 
+    else if (usuarioActual.rol === 'Director') {
+      navTabs.innerHTML = `
+        <button class="nav-tab active" onclick="cambiarTab('tabValidarEvidencias')">Validar Evidencias</button>
+        <button class="nav-tab" onclick="cambiarTab('tabGestionRetos')">Gestión de Retos</button>
+        <button class="nav-tab" onclick="cambiarTab('tabRanking')">Ranking</button>
+      `;
+      cambiarTab('tabValidarEvidencias');
+    }
+    else if (usuarioActual.rol === 'Presidente') {
+      navTabs.innerHTML = `
+        <button class="nav-tab active" onclick="cambiarTab('tabGestionRetosPresidente')">Gestión de Retos</button>
+        <button class="nav-tab" onclick="cambiarTab('tabValidarTodasEvidencias')">Validar Evidencias</button>
+        <button class="nav-tab" onclick="cambiarTab('tabRanking')">Ranking</button>
+      `;
+      cambiarTab('tabGestionRetosPresidente');
+    }
+    else if (usuarioActual.rol === 'Admin' || usuarioActual.rol === 'Junta Directiva') {
+      navTabs.innerHTML = `
+        <button class="nav-tab active" onclick="cambiarTab('tabAdmin')">Panel Administrativo</button>
+        <button class="nav-tab" onclick="cambiarTab('tabRanking')">Ranking</button>
+      `;
+      cambiarTab('tabAdmin');
+    }
+  }
+
+  function cambiarTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.add('hidden');
+    });
+    
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    document.getElementById(tabId).classList.remove('hidden');
+    
+    if (event && event.target) {
+      event.target.classList.add('active');
+    }
+    
+    cargarDatosTab(tabId);
+  }
+
+  function cargarDatos() {
+    if (usuarioActual.rol === 'Asociado') {
+      cargarRetosDisponibles();
+      cargarMisEvidencias();
+    } else if (usuarioActual.rol === 'Director') {
+      cargarEvidenciasPendientes();
+      cargarRetosGestion();
+    } else if (usuarioActual.rol === 'Presidente') {
+      cargarRetosGlobalesGestion();
+      cargarTodasEvidenciasPendientes();
+    } else if (usuarioActual.rol === 'Admin' || usuarioActual.rol === 'Junta Directiva') {
+      cargarEstadisticas();
+      cargarTodosRetos();
+      cargarTodasEvidencias();
+    }
+  }
+
+  function cargarDatosTab(tabId) {
+    if (tabId === 'tabMisRetos' && usuarioActual.rol === 'Asociado') {
+      cargarRetosDisponibles();
+      cargarMisEvidencias();
+    } else if (tabId === 'tabValidarEvidencias' && usuarioActual.rol === 'Director') {
+      cargarEvidenciasPendientes();
+    } else if (tabId === 'tabGestionRetos' && usuarioActual.rol === 'Director') {
+      cargarRetosGestion();
+    } else if (tabId === 'tabGestionRetosGlobales' && usuarioActual.rol === 'Presidente') {
+      cargarRetosGlobalesGestion();
+    } else if (tabId === 'tabGestionRetosPresidente' && usuarioActual.rol === 'Presidente') {
+      cargarRetosPresidente();
+    } else if (tabId === 'tabValidarTodasEvidencias' && usuarioActual.rol === 'Presidente') {
+      cargarTodasEvidenciasPendientes();
+    } else if (tabId === 'tabRanking') {
+      cargarRanking();
+    } else if (tabId === 'tabAdmin') {
+      cargarEstadisticas();
+      cargarTodosRetos();
+      cargarTodasEvidencias();
+    }
+  }
+
+  function cargarRetosDisponibles() {
+    const contenedor = document.getElementById('retosDisponibles');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando retos...</p></div>';
+    
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        if (retos.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos activos disponibles o ya completaste todos los retos</p>';
+          return;
+        }
+        
+        contenedor.innerHTML = '';
+        retos.forEach(reto => {
+          const div = document.createElement('div');
+          div.className = 'card reto-card';
+          const tipoReto = reto.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-direccion">DIRECCIÓN</span>';
+          div.innerHTML = `
+            <h3>${reto.nombre} ${tipoReto}</h3>
+            <p>${reto.descripcion}</p>
+            <div class="reto-info">
+              <span class="badge badge-puntaje">${reto.puntaje} puntos</span>
+              <span class="badge badge-fecha">${reto.fechaFin}</span>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" 
+                    onclick="mostrarModalSubirEvidencia('${reto.id}', '${reto.nombre}')">
+              Subir Evidencia
+            </button>
+          `;
+          contenedor.appendChild(div);
+        });
+      })
+      .withFailureHandler(function(error) {
+        contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
+      })
+      .getRetosDisponiblesParaAsociado(usuarioActual.id, usuarioActual.direccion);
+  }
+
+  function cargarMisEvidencias() {
+    const contenedor = document.getElementById('misEvidencias');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    google.script.run
+      .withSuccessHandler(function(evidencias) {
+        if (evidencias.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">Aún no has subido evidencias</p>';
+          return;
+        }
+        
+        let html = '<div class="table-container"><table><thead><tr><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th>Observación</th><th>Enlace</th></tr></thead><tbody>';
+        
+        evidencias.forEach(e => {
+          const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
+                            e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
+          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+          html += `
+            <tr>
+              <td>${e.nombreReto}</td>
+              <td>${tipo}</td>
+              <td>${e.fechaCarga}</td>
+              <td><span class="badge ${badgeClass}">${e.estado}</span></td>
+              <td>${e.observacion || '-'}</td>
+              <td><a href="${e.url}" target="_blank">Ver</a></td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table></div>';
+        contenedor.innerHTML = html;
+      })
+      .getMisEvidencias(usuarioActual.id);
+  }
+
+  function cargarEvidenciasPendientes() {
+    const contenedor = document.getElementById('evidenciasPendientes');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    google.script.run
+      .withSuccessHandler(function(evidencias) {
+        if (evidencias.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay evidencias pendientes</p>';
+          return;
+        }
+        
+        let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
+        
+        evidencias.forEach(e => {
+          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+          html += `
+            <tr>
+              <td>${e.nombreAsociado}</td>
+              <td>${e.nombreReto}</td>
+              <td>${tipo}</td>
+              <td>${e.fechaCarga}</td>
+              <td><a href="${e.url}" target="_blank">Ver evidencia</a></td>
+              <td>
+                <button class="btn btn-warning" style="width: auto; padding: 0.5rem 1rem;" 
+                        onclick="mostrarModalValidarEvidencia('${e.id}', '${e.nombreAsociado}', '${e.nombreReto}', '${e.url}')">
+                  Validar
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table></div>';
+        contenedor.innerHTML = html;
+      })
+      .getEvidenciasPendientes(usuarioActual.direccion);
+  }
+
+  function cargarRetosGestion() {
+    const contenedor = document.getElementById('retosGestion');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        if (retos.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos creados</p>';
+          return;
+        }
+        
+        contenedor.innerHTML = '';
+        retos.forEach(reto => {
+          if (!reto.esGlobal) {
+            const div = document.createElement('div');
+            div.className = 'card reto-card';
+            div.innerHTML = `
+              <h3>${reto.nombre}</h3>
+              <p>${reto.descripcion}</p>
+              <div class="reto-info">
+                <span class="badge badge-puntaje">${reto.puntaje} pts</span>
+                <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
+              </div>
+              <div class="reto-actions">
+                <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarReto('${reto.id}')">
+                  Editar
+                </button>
+                <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
+                  Desactivar
+                </button>
+              </div>
+            `;
+            contenedor.appendChild(div);
+          }
+        });
+      })
+      .getRetosDireccion(usuarioActual.direccion);
+  }
+
+  function cargarRetosGlobalesGestion() {
+    const contenedor = document.getElementById('retosGlobalesGestion');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        const retosGlobales = retos.filter(r => r.esGlobal);
+        
+        if (retosGlobales.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos globales creados</p>';
+          return;
+        }
+        
+        contenedor.innerHTML = '';
+        retosGlobales.forEach(reto => {
+          const div = document.createElement('div');
+          div.className = 'card reto-card';
+          div.innerHTML = `
+            <h3>${reto.nombre} <span class="badge badge-global">GLOBAL</span></h3>
+            <p>${reto.descripcion}</p>
+            <div class="reto-info">
+              <span class="badge badge-puntaje">${reto.puntaje} pts</span>
+              <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
+            </div>
+            <div class="reto-actions">
+              <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarRetoGlobal('${reto.id}')">
+                Editar
+              </button>
+              <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
+                Desactivar
+              </button>
+            </div>
+          `;
+          contenedor.appendChild(div);
+        });
+      })
+      .getTodosLosRetos();
+  }
+
+  function cargarTodasEvidenciasPendientes() {
+    const contenedor = document.getElementById('todasEvidenciasPendientes');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    google.script.run
+      .withSuccessHandler(function(evidencias) {
+        if (evidencias.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay evidencias pendientes</p>';
+          return;
+        }
+        
+        let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
+        
+        evidencias.forEach(e => {
+          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+          html += `
+            <tr>
+              <td>${e.nombreAsociado}</td>
+              <td>${e.direccion}</td>
+              <td>${e.nombreReto}</td>
+              <td>${tipo}</td>
+              <td>${e.fechaCarga}</td>
+              <td><a href="${e.url}" target="_blank">Ver evidencia</a></td>
+              <td>
+                <button class="btn btn-warning" style="width: auto; padding: 0.5rem 1rem;" 
+                        onclick="mostrarModalValidarEvidencia('${e.id}', '${e.nombreAsociado}', '${e.nombreReto}', '${e.url}')">
+                  Validar
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table></div>';
+        contenedor.innerHTML = html;
+      })
+      .getTodasLasEvidenciasPendientes();
+  }
+
+  function cambiarTipoRanking(tipo, boton) {
+    tipoRankingActual = tipo;
+    
+    document.querySelectorAll('.ranking-selector button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    boton.classList.add('active');
+    
+    cargarRanking();
+  }
+
+  function cargarRanking() {
+    const contenedor = document.getElementById('rankingContenido');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    if (tipoRankingActual === 'capitular') {
+      cargarRankingCapitular(contenedor);
+    } else if (tipoRankingActual === 'direccion') {
+      cargarRankingDireccion(contenedor);
+    }
+  }
+
+  function cargarRankingCapitular(contenedor) {
+    google.script.run
+      .withSuccessHandler(function(ranking) {
+        let html = '<h3>Ranking por Direcciones</h3>';
+        
+        google.script.run
+          .withSuccessHandler(function(rankingDirecciones) {
+            if (rankingDirecciones.length === 0) {
+              contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay datos de ranking</p>';
+              return;
+            }
+            
+            const maxPuntaje = rankingDirecciones[0].puntajeTotal;
+            
+            rankingDirecciones.forEach((item, index) => {
+              const porcentaje = (item.puntajeTotal / maxPuntaje) * 100;
+              let medalClass = '';
+              if (index === 0) medalClass = 'gold';
+              else if (index === 1) medalClass = 'silver';
+              else if (index === 2) medalClass = 'bronze';
+              
+              html += `
+                <div class="ranking-item">
+                  <div class="ranking-position ${medalClass}">${index + 1}</div>
+                  <div class="ranking-info">
+                    <div class="ranking-name">${item.direccion}</div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar" style="width: ${porcentaje}%">
+                        ${item.puntajeTotal} pts
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+            
+            html += '<h3 style="margin-top: 2rem;">Ranking Individual</h3>';
+            
+            if (ranking.length === 0) {
+              html += '<p style="text-align: center; color: #999;">No hay datos de ranking</p>';
+            } else {
+              html += '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>Dirección</th><th>Puntaje Total</th></tr></thead><tbody>';
+              
+              ranking.slice(0, 20).forEach((item, index) => {
+                html += `
+                  <tr>
+                    <td><strong>${index + 1}</strong></td>
+                    <td>${item.nombre}</td>
+                    <td>${item.direccion}</td>
+                    <td><span class="badge badge-puntaje">${item.puntaje} pts</span></td>
+                  </tr>
+                `;
+              });
+              
+              html += '</tbody></table></div>';
+            }
+            
+            contenedor.innerHTML = html;
+          })
+          .getRankingDirecciones('total');
+      })
+      .getRankingGeneral();
+  }
+
+  function cargarRankingDireccion(contenedor) {
+    const direccion = usuarioActual.direccion;
+
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    google.script.run
+      .withSuccessHandler(function(ranking) {
+        if (ranking.length === 0) {
+          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay datos de ranking aún en ' + direccion + '</p>';
+          return;
+        }
+
+        const maxPuntaje = ranking[0].puntaje || 1;
+
+        let html = '<h3 style="margin-bottom: 1rem;">' + direccion + '</h3>';
+
+        ranking.forEach((item, index) => {
+          const porcentaje = (item.puntaje / maxPuntaje) * 100;
+          let medalClass = '';
+          if (index === 0) medalClass = 'gold';
+          else if (index === 1) medalClass = 'silver';
+          else if (index === 2) medalClass = 'bronze';
+
+          const esActual = item.nombre === usuarioActual.nombre;
+
+          html += `
+            <div class="ranking-item" style="${esActual ? 'border: 2px solid var(--secondary); background: #e3f2fd;' : ''}">
+              <div class="ranking-position ${medalClass}">${index + 1}</div>
+              <div class="ranking-info">
+                <div class="ranking-name">
+                  ${item.nombre}
+                  ${esActual ? '<span class="badge badge-direccion" style="font-size: 0.7rem; margin-left: 0.5rem;">Tú</span>' : ''}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" style="width: ${porcentaje}%">
+                    ${item.puntaje} pts
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        contenedor.innerHTML = html;
+      })
+      .withFailureHandler(function(error) {
+        contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar ranking</p>';
+      })
+      .getRankingPorDireccion(direccion, 'direccion');
+  }
+
+  function cargarEstadisticas() {
+    google.script.run
+      .withSuccessHandler(function(stats) {
+        const contenedor = document.getElementById('estadisticas');
+        contenedor.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-number">${stats.retosActivos}</div>
+            <div class="stat-label">Retos Activos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${stats.totalAsociados}</div>
+            <div class="stat-label">Asociados Activos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${stats.evidenciasPendientes}</div>
+            <div class="stat-label">Evidencias Pendientes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${stats.evidenciasAprobadas}</div>
+            <div class="stat-label">Evidencias Aprobadas</div>
+          </div>
+        `;
+      })
+      .getEstadisticasGenerales();
+  }
+
+  function cargarTodosRetos() {
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        const contenedor = document.getElementById('todosRetos');
+        if (retos.length === 0) {
+          contenedor.innerHTML = '<p>No hay retos</p>';
+          return;
+        }
+        
+        let html = '<div class="table-container"><table><thead><tr><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Puntaje</th><th>Fecha Fin</th></tr></thead><tbody>';
+        
+        retos.forEach(r => {
+          const tipo = r.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+          html += `
+            <tr>
+              <td>${r.direccion}</td>
+              <td>${r.nombre}</td>
+              <td>${tipo}</td>
+              <td>${r.puntaje} pts</td>
+              <td>${r.fechaFin}</td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table></div>';
+        contenedor.innerHTML = html;
+      })
+      .getTodosLosRetos();
+  }
+
+  function cargarTodasEvidencias() {
+    google.script.run
+      .withSuccessHandler(function(evidencias) {
+        const contenedor = document.getElementById('todasEvidencias');
+        if (evidencias.length === 0) {
+          contenedor.innerHTML = '<p>No hay evidencias</p>';
+          return;
+        }
+        
+        let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>';
+        
+        evidencias.forEach(e => {
+          const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
+                            e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
+          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+          html += `
+            <tr>
+              <td>${e.nombreAsociado}</td>
+              <td>${e.direccion}</td>
+              <td>${e.nombreReto}</td>
+              <td>${tipo}</td>
+              <td>${e.fechaCarga}</td>
+              <td><span class="badge ${badgeClass}">${e.estado}</span></td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table></div>';
+        contenedor.innerHTML = html;
+      })
+      .getTodasLasEvidencias();
+  }
+
+  function mostrarModalSubirEvidencia(idReto, nombreReto) {
+    retoSeleccionadoId = idReto;
+    document.getElementById('retoSeleccionado').textContent = nombreReto;
+    document.getElementById('urlEvidencia').value = '';
+    document.getElementById('modalSubirEvidencia').classList.add('show');
+  }
+
+  function mostrarModalCrearReto() {
+    document.getElementById('tituloModalReto').textContent = 'Crear Nuevo Reto';
+    document.getElementById('btnGuardarReto').textContent = 'Crear Reto';
+    document.getElementById('nombreReto').value = '';
+    document.getElementById('descripcionReto').value = '';
+    document.getElementById('puntajeReto').value = '10';
+    document.getElementById('fechaInicioReto').value = '';
+    document.getElementById('fechaFinReto').value = '';
+    document.getElementById('esRetoGlobal').value = 'false';
+    document.getElementById('idRetoEditar').value = '';
+    document.getElementById('grupoDestinoReto').style.display = 'none';
+    document.getElementById('modalCrearReto').classList.add('show');
+    
+  }
+
+  function mostrarModalCrearRetoGlobal() {
+    document.getElementById('tituloModalReto').textContent = 'Crear Reto Global';
+    document.getElementById('btnGuardarReto').textContent = 'Crear Reto';
+    document.getElementById('nombreReto').value = '';
+    document.getElementById('descripcionReto').value = '';
+    document.getElementById('puntajeReto').value = '10';
+    document.getElementById('fechaInicioReto').value = '';
+    document.getElementById('fechaFinReto').value = '';
+    document.getElementById('esRetoGlobal').value = 'true';
+    document.getElementById('idRetoEditar').value = '';
+    document.getElementById('modalCrearReto').classList.add('show');
+  }
+
+  function editarReto(idReto) {
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        const reto = retos.find(r => r.id === idReto);
+        if (reto) {
+          document.getElementById('tituloModalReto').textContent = 'Editar Reto';
+          document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
+          document.getElementById('nombreReto').value = reto.nombre;
+          document.getElementById('descripcionReto').value = reto.descripcion;
+          document.getElementById('puntajeReto').value = reto.puntaje;
+          
+          const fechaInicio = convertirFechaParaInput(reto.fechaInicio);
+          const fechaFin = convertirFechaParaInput(reto.fechaFin);
+          
+          document.getElementById('fechaInicioReto').value = fechaInicio;
+          document.getElementById('fechaFinReto').value = fechaFin;
+          document.getElementById('esRetoGlobal').value = 'false';
+          document.getElementById('idRetoEditar').value = idReto;
+          document.getElementById('modalCrearReto').classList.add('show');
+        }
+      })
+      .getRetosDireccion(usuarioActual.direccion);
+  }
+
+  function editarRetoGlobal(idReto) {
+    google.script.run
+      .withSuccessHandler(function(retos) {
+        const reto = retos.find(r => r.id === idReto);
+        if (reto) {
+          document.getElementById('tituloModalReto').textContent = 'Editar Reto Global';
+          document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
+          document.getElementById('nombreReto').value = reto.nombre;
+          document.getElementById('descripcionReto').value = reto.descripcion;
+          document.getElementById('puntajeReto').value = reto.puntaje;
+          
+          const fechaInicio = convertirFechaParaInput(reto.fechaInicio);
+          const fechaFin = convertirFechaParaInput(reto.fechaFin);
+          
+          document.getElementById('fechaInicioReto').value = fechaInicio;
+          document.getElementById('fechaFinReto').value = fechaFin;
+          document.getElementById('esRetoGlobal').value = 'true';
+          document.getElementById('idRetoEditar').value = idReto;
+          document.getElementById('modalCrearReto').classList.add('show');
+        }
+      })
+      .getTodosLosRetos();
+  }
+
+  function convertirFechaParaInput(fechaTexto) {
+    if (!fechaTexto) return '';
+    const partes = fechaTexto.split('/');
+    if (partes.length === 3) {
+      return `${partes[2]}-${partes[1]}-${partes[0]}`;
+    }
+    return '';
+  }
+
+  function mostrarModalValidarEvidencia(id, nombreAsociado, nombreReto, url) {
+    evidenciaSeleccionadaId = id;
+    document.getElementById('detalleEvidencia').innerHTML = `
+      <p><strong>Asociado:</strong> ${nombreAsociado}</p>
+      <p><strong>Reto:</strong> ${nombreReto}</p>
+      <p><strong>Evidencia:</strong> <a href="${url}" target="_blank">Ver enlace</a></p>
+    `;
+    document.getElementById('observacionValidacion').value = '';
+    document.getElementById('modalValidarEvidencia').classList.add('show');
+  }
+
+  function cerrarModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
+    
+    operacionEnProceso = false;
+    habilitarBotonesModal(modalId);
+    
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      const alertas = modal.querySelectorAll('.alert');
+      alertas.forEach(alerta => alerta.remove());
+    }
+  }
+
+  function subirEvidencia() {
+    const url = document.getElementById('urlEvidencia').value.trim();
+    
+    if (!url) {
+      mostrarAlertaEnModal('Por favor ingresa la URL de la evidencia', 'error');
+      return;
+    }
+    
+    if (operacionEnProceso) return;
+    operacionEnProceso = true;
+    
+    deshabilitarBotonesModal('modalSubirEvidencia');
+    
+    google.script.run
+      .withSuccessHandler(function(resultado) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalSubirEvidencia');
+        
+        if (resultado.success) {
+          mostrarAlertaEnModal('Evidencia subida exitosamente', 'success');
+          setTimeout(() => {
+            cerrarModal('modalSubirEvidencia');
+            cargarMisEvidencias();
+            cargarRetosDisponibles();
+          }, 1500);
+        } else {
+          mostrarAlertaEnModal('Error: ' + resultado.message, 'error');
+        }
+      })
+      .withFailureHandler(function(error) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalSubirEvidencia');
+        mostrarAlertaEnModal('Error al conectar con el servidor', 'error');
+      })
+      .subirEvidencia({
+        idAsociado: usuarioActual.id,
+        nombreAsociado: usuarioActual.nombre,
+        idReto: retoSeleccionadoId,
+        url: url
+      });
+  }
+
+  function mostrarAlertaEnModal(mensaje, tipo) {
+    const modal = document.querySelector('#modalSubirEvidencia .modal-content');
+    const alertaExistente = modal.querySelector('.alert');
+    if (alertaExistente) alertaExistente.remove();
+    
+    const clase = tipo === 'error' ? 'alert-error' : 'alert-success';
+    const div = document.createElement('div');
+    div.className = `alert ${clase}`;
+    div.textContent = mensaje;
+    modal.insertBefore(div, modal.firstChild);
+  }
+
+  function crearReto() {
+    const nombre = document.getElementById('nombreReto').value.trim();
+    const descripcion = document.getElementById('descripcionReto').value.trim();
+    const puntaje = parseInt(document.getElementById('puntajeReto').value);
+    const fechaInicio = document.getElementById('fechaInicioReto').value;
+    const fechaFin = document.getElementById('fechaFinReto').value;
+
+    // Si el select de destino está visible, usarlo; si no, usar el hidden esRetoGlobal (para Director)
+    let esGlobal, direccion;
+    const grupoDestino = document.getElementById('grupoDestinoReto');
+    if (grupoDestino && grupoDestino.style.display !== 'none') {
+      const destino = document.getElementById('destinoReto').value;
+      esGlobal = destino === 'global';
+      direccion = esGlobal ? 'Todas' : destino;
+    } else {
+      esGlobal = document.getElementById('esRetoGlobal').value === 'true';
+      direccion = usuarioActual.direccion;
+    }
+
+    if (!nombre || !descripcion || !fechaFin) {
+      mostrarAlertaEnModalReto('Por favor completa todos los campos obligatorios', 'error');
+      return;
+    }
+
+    if (operacionEnProceso) return;
+    operacionEnProceso = true;
+    deshabilitarBotonesModal('modalCrearReto');
+
+    google.script.run
+      .withSuccessHandler(function(resultado) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalCrearReto');
+
+        if (resultado.success) {
+          mostrarAlertaEnModalReto('Reto creado exitosamente', 'success');
+          setTimeout(() => {
+            cerrarModal('modalCrearReto');
+            if (usuarioActual.rol === 'Presidente') {
+              cargarRetosPresidente();
+            } else if (esGlobal) {
+              cargarRetosGlobalesGestion();
+            } else {
+              cargarRetosGestion();
+            }
+          }, 1500);
+        } else {
+          mostrarAlertaEnModalReto('Error: ' + resultado.message, 'error');
+        }
+      })
+      .withFailureHandler(function(error) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalCrearReto');
+        mostrarAlertaEnModalReto('Error al conectar con el servidor', 'error');
+      })
+      .crearReto({
+        direccion: direccion,
+        nombre: nombre,
+        descripcion: descripcion,
+        puntaje: puntaje,
+        fechaInicio: fechaInicio,
+        fechaFin: fechaFin,
+        esGlobal: esGlobal
+      });
+  }
+
+  function mostrarAlertaEnModalReto(mensaje, tipo) {
+    const modal = document.querySelector('#modalCrearReto .modal-content');
+    const alertaExistente = modal.querySelector('.alert');
+    if (alertaExistente) alertaExistente.remove();
+    
+    const clase = tipo === 'error' ? 'alert-error' : 'alert-success';
+    const div = document.createElement('div');
+    div.className = `alert ${clase}`;
+    div.textContent = mensaje;
+    modal.insertBefore(div, modal.firstChild);
+  }
+
+  function guardarReto() {
+    const idEditar = document.getElementById('idRetoEditar').value;
+    
+    if (idEditar) {
+      actualizarReto();
+    } else {
+      crearReto();
+    }
+  }
+
+  function actualizarReto() {
+    const id = document.getElementById('idRetoEditar').value;
+    const nombre = document.getElementById('nombreReto').value.trim();
+    const descripcion = document.getElementById('descripcionReto').value.trim();
+    const puntaje = parseInt(document.getElementById('puntajeReto').value);
+    const fechaInicio = document.getElementById('fechaInicioReto').value;
+    const fechaFin = document.getElementById('fechaFinReto').value;
+
+    let esGlobal, direccion;
+    const grupoDestino = document.getElementById('grupoDestinoReto');
+    if (grupoDestino && grupoDestino.style.display !== 'none') {
+      const destino = document.getElementById('destinoReto').value;
+      esGlobal = destino === 'global';
+      direccion = esGlobal ? 'Todas' : destino;
+    } else {
+      esGlobal = document.getElementById('esRetoGlobal').value === 'true';
+      direccion = usuarioActual.direccion;
+    }
+
+    if (!nombre || !descripcion || !fechaFin) {
+      mostrarAlertaEnModalReto('Por favor completa todos los campos obligatorios', 'error');
+      return;
+    }
+
+    if (operacionEnProceso) return;
+    operacionEnProceso = true;
+    deshabilitarBotonesModal('modalCrearReto');
+
+    google.script.run
+      .withSuccessHandler(function(resultado) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalCrearReto');
+
+        if (resultado.success) {
+          mostrarAlertaEnModalReto('Reto actualizado exitosamente', 'success');
+          setTimeout(() => {
+            cerrarModal('modalCrearReto');
+            if (usuarioActual.rol === 'Presidente') {
+              cargarRetosPresidente();
+            } else if (esGlobal) {
+              cargarRetosGlobalesGestion();
+            } else {
+              cargarRetosGestion();
+            }
+          }, 1500);
+        } else {
+          mostrarAlertaEnModalReto('Error: ' + resultado.message, 'error');
+        }
+      })
+      .withFailureHandler(function(error) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalCrearReto');
+        mostrarAlertaEnModalReto('Error al conectar con el servidor', 'error');
+      })
+      .actualizarReto({
+        id: id,
+        direccion: direccion,
+        nombre: nombre,
+        descripcion: descripcion,
+        puntaje: puntaje,
+        fechaInicio: fechaInicio,
+        fechaFin: fechaFin,
+        esGlobal: esGlobal
+      });
+  }
+
+  function validarEvidencia(aprobado) {
+    const observacion = document.getElementById('observacionValidacion').value.trim();
+    
+    if (!aprobado && !observacion) {
+      mostrarAlertaEnModalValidacion('Por favor ingresa una observación al rechazar la evidencia', 'error');
+      return;
+    }
+    
+    if (operacionEnProceso) return;
+    operacionEnProceso = true;
+    
+    deshabilitarBotonesModal('modalValidarEvidencia');
+    
+    google.script.run
+      .withSuccessHandler(function(resultado) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalValidarEvidencia');
+        
+        if (resultado.success) {
+          mostrarAlertaEnModalValidacion(
+            aprobado ? 'Evidencia aprobada exitosamente' : 'Evidencia rechazada', 
+            aprobado ? 'success' : 'info'
+          );
+          setTimeout(() => {
+            cerrarModal('modalValidarEvidencia');
+            if (usuarioActual.rol === 'Presidente') {
+              cargarTodasEvidenciasPendientes();
+            } else {
+              cargarEvidenciasPendientes();
+            }
+          }, 1500);
+        } else {
+          mostrarAlertaEnModalValidacion('Error: ' + resultado.message, 'error');
+        }
+      })
+      .withFailureHandler(function(error) {
+        operacionEnProceso = false;
+        habilitarBotonesModal('modalValidarEvidencia');
+        mostrarAlertaEnModalValidacion('Error al validar evidencia', 'error');
+      })
+      .validarEvidencia(evidenciaSeleccionadaId, aprobado, observacion);
+  }
+
+  function mostrarAlertaEnModalValidacion(mensaje, tipo) {
+    const modal = document.querySelector('#modalValidarEvidencia .modal-content');
+    const alertaExistente = modal.querySelector('.alert');
+    if (alertaExistente) alertaExistente.remove();
+    
+    const clase = tipo === 'error' ? 'alert-error' : tipo === 'info' ? 'alert-info' : 'alert-success';
+    const div = document.createElement('div');
+    div.className = `alert ${clase}`;
+    div.textContent = mensaje;
+    modal.insertBefore(div, modal.firstChild);
+  }
+
+  function desactivarReto(idReto) {
+    retoADesactivar = idReto;
+    document.getElementById('modalConfirmarDesactivar').classList.add('show');
+  }
+
+  function confirmarDesactivarReto() {
+    if (!retoADesactivar) return;
+    
+    if (operacionEnProceso) return;
+    operacionEnProceso = true;
+    
+    deshabilitarBotonesModal('modalConfirmarDesactivar');
+    
+    cerrarModal('modalConfirmarDesactivar');
+    
+    google.script.run
+      .withSuccessHandler(function(resultado) {
+        operacionEnProceso = false;
+        
+        if (resultado.success) {
+          mostrarNotificacion('Reto desactivado exitosamente', 'success');
+          if (usuarioActual.rol === 'Presidente') {
+            cargarRetosGlobalesGestion();
+          } else {
+            cargarRetosGestion();
+          }
+          retoADesactivar = null;
+        } else {
+          mostrarNotificacion('Error: ' + resultado.message, 'error');
+          habilitarBotonesModal('modalConfirmarDesactivar');
+        }
+      })
+      .withFailureHandler(function(error) {
+        operacionEnProceso = false;
+        mostrarNotificacion('Error al desactivar reto', 'error');
+        habilitarBotonesModal('modalConfirmarDesactivar');
+      })
+      .desactivarReto(retoADesactivar);
+  }
+
+  function mostrarNotificacion(mensaje, tipo) {
+    const notif = document.createElement('div');
+    notif.className = `alert alert-${tipo}`;
+    notif.style.position = 'fixed';
+    notif.style.top = '20px';
+    notif.style.right = '20px';
+    notif.style.zIndex = '9999';
+    notif.style.minWidth = '300px';
+    notif.textContent = mensaje;
+    
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+      notif.style.transition = 'opacity 0.5s';
+      notif.style.opacity = '0';
+      setTimeout(() => notif.remove(), 500);
+    }, 3000);
+  }
+
+  function mostrarAlerta(contenedorId, mensaje, tipo) {
+    const contenedor = document.getElementById(contenedorId);
+    const clase = tipo === 'error' ? 'alert-error' : tipo === 'info' ? 'alert-info' : 'alert-success';
+    contenedor.innerHTML = `<div class="alert ${clase}">${mensaje}</div>`;
+  }
+
+  function mostrarCargando(contenedorId) {
+    const contenedor = document.getElementById(contenedorId);
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  }
+
+  window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+      const modalId = event.target.id;
+      cerrarModal(modalId);
+    }
+  }
+</script>
+
+</body>
+</html>
