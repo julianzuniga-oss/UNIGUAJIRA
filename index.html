@@ -746,7 +746,7 @@
   </div>
 </main>
 
-<!-- MODAL: SUBIR EVIDENCIA -->
+<!-- MODALES (igual que antes) -->
 <div id="modalSubirEvidencia" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -768,7 +768,6 @@
   </div>
 </div>
 
-<!-- MODAL: CREAR/EDITAR RETO -->
 <div id="modalCrearReto" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -798,7 +797,6 @@
       <label>Destino del Reto</label>
       <select id="destinoReto">
         <option value="global">Reto Global (todas las direcciones)</option>
-        <!-- Las opciones de dirección se cargan dinámicamente -->
       </select>
     </div>
     <input type="hidden" id="esRetoGlobal" value="false" />
@@ -810,7 +808,6 @@
   </div>
 </div>
 
-<!-- MODAL: VALIDAR EVIDENCIA -->
 <div id="modalValidarEvidencia" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -829,7 +826,6 @@
   </div>
 </div>
 
-<!-- MODAL: CONFIRMAR DESACTIVACIÓN -->
 <div id="modalConfirmarDesactivar" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -848,113 +844,33 @@
 </footer>
 
 <script>
-  // Cargar direcciones en el select del modal
-  function cargarDireccionesEnSelect() {
-    google.script.run
-      .withSuccessHandler(function(direcciones) {
-        const select = document.getElementById('destinoReto');
-        // Mantener la opción "Global" siempre primera
-        select.innerHTML = '<option value="global">Reto Global (todas las direcciones)</option>';
-        direcciones.forEach(d => {
-          select.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
-        });
-      })
-      .getDirecciones();
+  // ========================================
+  // CONFIGURACIÓN - CAMBIA ESTA URL
+  // ========================================
+  const API_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI';
+  // Ejemplo: 'https://script.google.com/macros/s/AKfycbx.../exec'
+  
+  // ========================================
+  // FUNCIÓN PRINCIPAL DE LLAMADA A LA API
+  // ========================================
+  async function callAPI(action, data = {}) {
+    try {
+      const formData = new FormData();
+      formData.append('action', action);
+      formData.append('data', JSON.stringify(data));
+      
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error llamando a la API:', error);
+      throw error;
+    }
   }
-
-  // Mostrar modal desde el contexto del Presidente
-  function mostrarModalCrearRetoPresidente() {
-    document.getElementById('tituloModalReto').textContent = 'Crear Nuevo Reto';
-    document.getElementById('btnGuardarReto').textContent = 'Crear Reto';
-    document.getElementById('nombreReto').value = '';
-    document.getElementById('descripcionReto').value = '';
-    document.getElementById('puntajeReto').value = '10';
-    document.getElementById('fechaInicioReto').value = '';
-    document.getElementById('fechaFinReto').value = '';
-    document.getElementById('idRetoEditar').value = '';
-
-    // Mostrar el selector de destino y cargarlo
-    document.getElementById('grupoDestinoReto').style.display = 'block';
-    document.getElementById('destinoReto').value = 'global';
-    cargarDireccionesEnSelect();
-
-    document.getElementById('modalCrearReto').classList.add('show');
-  }
-
-  // Cargar todos los retos (globales + de todas las direcciones) para el Presidente
-  function cargarRetosPresidente() {
-    const contenedor = document.getElementById('retosPresidenteGestion');
-    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        if (retos.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos creados</p>';
-          return;
-        }
-
-        contenedor.innerHTML = '';
-        retos.forEach(reto => {
-          const div = document.createElement('div');
-          div.className = 'card reto-card';
-          const tipoLabel = reto.esGlobal
-            ? '<span class="badge badge-global">GLOBAL</span>'
-            : `<span class="badge badge-direccion">${reto.direccion}</span>`;
-
-          div.innerHTML = `
-            <h3>${reto.nombre} ${tipoLabel}</h3>
-            <p>${reto.descripcion}</p>
-            <div class="reto-info">
-              <span class="badge badge-puntaje">${reto.puntaje} pts</span>
-              <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
-            </div>
-            <div class="reto-actions">
-              <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarRetoPresidente('${reto.id}', ${reto.esGlobal})">
-                Editar
-              </button>
-              <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
-                Desactivar
-              </button>
-            </div>
-          `;
-          contenedor.appendChild(div);
-        });
-      })
-      .withFailureHandler(function() {
-        contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
-      })
-      .getTodosLosRetos();
-  }
-
-  // Editar reto desde el contexto del Presidente
-  function editarRetoPresidente(idReto, esGlobal) {
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        const reto = retos.find(r => r.id === idReto);
-        if (reto) {
-          document.getElementById('tituloModalReto').textContent = 'Editar Reto';
-          document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
-          document.getElementById('nombreReto').value = reto.nombre;
-          document.getElementById('descripcionReto').value = reto.descripcion;
-          document.getElementById('puntajeReto').value = reto.puntaje;
-          document.getElementById('fechaInicioReto').value = convertirFechaParaInput(reto.fechaInicio);
-          document.getElementById('fechaFinReto').value = convertirFechaParaInput(reto.fechaFin);
-          document.getElementById('idRetoEditar').value = idReto;
-
-          // Mostrar selector y pre-seleccionar
-          document.getElementById('grupoDestinoReto').style.display = 'block';
-          cargarDireccionesEnSelect();
-          // Esperar a que se carguen las opciones y luego seleccionar
-          setTimeout(() => {
-            document.getElementById('destinoReto').value = reto.esGlobal ? 'global' : reto.direccion;
-          }, 800);
-
-          document.getElementById('modalCrearReto').classList.add('show');
-        }
-      })
-      .getTodosLosRetos();
-  }
-
 
   // Variables globales
   let usuarioActual = null;
@@ -1008,7 +924,7 @@
   }
 
   // Login
-  function iniciarSesion() {
+  async function iniciarSesion() {
     const email = document.getElementById('emailInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
     
@@ -1019,10 +935,12 @@
 
     mostrarCargando('loginError');
     
-    google.script.run
-      .withSuccessHandler(respuestaLogin)
-      .withFailureHandler(errorLogin)
-      .loginUsuario(email, password);
+    try {
+      const resultado = await callAPI('loginUsuario', { email, password });
+      respuestaLogin(resultado);
+    } catch (error) {
+      errorLogin(error);
+    }
   }
 
   function respuestaLogin(resultado) {
@@ -1055,7 +973,7 @@
     mostrarAlerta('loginError', 'Error al conectar con el servidor: ' + error.message, 'error');
   }
 
-  function cambiarPassword() {
+  async function cambiarPassword() {
     const passwordActual = document.getElementById('passwordActual').value.trim();
     const passwordNueva = document.getElementById('passwordNueva').value.trim();
     const passwordConfirmar = document.getElementById('passwordConfirmar').value.trim();
@@ -1077,31 +995,34 @@
 
     mostrarCargando('cambioPasswordError');
     
-    google.script.run
-      .withSuccessHandler(function(resultado) {
-        if (resultado.success) {
-          mostrarAlerta('cambioPasswordError', resultado.message, 'success');
-          setTimeout(function() {
-            document.getElementById('cambioPasswordSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-            
-            document.getElementById('userInfo').innerHTML = `
-              <div class="user-badge">${usuarioActual.nombre}</div>
-              <div class="user-badge">${usuarioActual.rol}</div>
-              <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
-            `;
-            
-            configurarInterfazSegunRol();
-            cargarDatos();
-          }, 1500);
-        } else {
-          mostrarAlerta('cambioPasswordError', resultado.message, 'error');
-        }
-      })
-      .withFailureHandler(function(error) {
-        mostrarAlerta('cambioPasswordError', 'Error al cambiar contraseña', 'error');
-      })
-      .cambiarPassword(usuarioActual.email, passwordActual, passwordNueva);
+    try {
+      const resultado = await callAPI('cambiarPassword', {
+        email: usuarioActual.email,
+        passwordActual,
+        passwordNueva
+      });
+      
+      if (resultado.success) {
+        mostrarAlerta('cambioPasswordError', resultado.message, 'success');
+        setTimeout(function() {
+          document.getElementById('cambioPasswordSection').classList.add('hidden');
+          document.getElementById('dashboardSection').classList.remove('hidden');
+          
+          document.getElementById('userInfo').innerHTML = `
+            <div class="user-badge">${usuarioActual.nombre}</div>
+            <div class="user-badge">${usuarioActual.rol}</div>
+            <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+          `;
+          
+          configurarInterfazSegunRol();
+          cargarDatos();
+        }, 1500);
+      } else {
+        mostrarAlerta('cambioPasswordError', resultado.message, 'error');
+      }
+    } catch (error) {
+      mostrarAlerta('cambioPasswordError', 'Error al cambiar contraseña', 'error');
+    }
   }
 
   function cerrarSesion() {
@@ -1170,7 +1091,7 @@
       cargarEvidenciasPendientes();
       cargarRetosGestion();
     } else if (usuarioActual.rol === 'Presidente') {
-      cargarRetosGlobalesGestion();
+      cargarRetosPresidente();
       cargarTodasEvidenciasPendientes();
     } else if (usuarioActual.rol === 'Admin' || usuarioActual.rol === 'Junta Directiva') {
       cargarEstadisticas();
@@ -1187,8 +1108,6 @@
       cargarEvidenciasPendientes();
     } else if (tabId === 'tabGestionRetos' && usuarioActual.rol === 'Director') {
       cargarRetosGestion();
-    } else if (tabId === 'tabGestionRetosGlobales' && usuarioActual.rol === 'Presidente') {
-      cargarRetosGlobalesGestion();
     } else if (tabId === 'tabGestionRetosPresidente' && usuarioActual.rol === 'Presidente') {
       cargarRetosPresidente();
     } else if (tabId === 'tabValidarTodasEvidencias' && usuarioActual.rol === 'Presidente') {
@@ -1202,181 +1121,154 @@
     }
   }
 
-  function cargarRetosDisponibles() {
+  async function cargarRetosDisponibles() {
     const contenedor = document.getElementById('retosDisponibles');
     contenedor.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando retos...</p></div>';
     
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        if (retos.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos activos disponibles o ya completaste todos los retos</p>';
-          return;
-        }
-        
-        contenedor.innerHTML = '';
-        retos.forEach(reto => {
-          const div = document.createElement('div');
-          div.className = 'card reto-card';
-          const tipoReto = reto.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-direccion">DIRECCIÓN</span>';
-          div.innerHTML = `
-            <h3>${reto.nombre} ${tipoReto}</h3>
-            <p>${reto.descripcion}</p>
-            <div class="reto-info">
-              <span class="badge badge-puntaje">${reto.puntaje} puntos</span>
-              <span class="badge badge-fecha">${reto.fechaFin}</span>
-            </div>
-            <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" 
-                    onclick="mostrarModalSubirEvidencia('${reto.id}', '${reto.nombre}')">
-              Subir Evidencia
-            </button>
-          `;
-          contenedor.appendChild(div);
-        });
-      })
-      .withFailureHandler(function(error) {
-        contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
-      })
-      .getRetosDisponiblesParaAsociado(usuarioActual.id, usuarioActual.direccion);
+    try {
+      const retos = await callAPI('getRetosDisponibles', {
+        idAsociado: usuarioActual.id,
+        direccion: usuarioActual.direccion
+      });
+      
+      if (retos.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos activos disponibles o ya completaste todos los retos</p>';
+        return;
+      }
+      
+      contenedor.innerHTML = '';
+      retos.forEach(reto => {
+        const div = document.createElement('div');
+        div.className = 'card reto-card';
+        const tipoReto = reto.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-direccion">DIRECCIÓN</span>';
+        div.innerHTML = `
+          <h3>${reto.nombre} ${tipoReto}</h3>
+          <p>${reto.descripcion}</p>
+          <div class="reto-info">
+            <span class="badge badge-puntaje">${reto.puntaje} puntos</span>
+            <span class="badge badge-fecha">${reto.fechaFin}</span>
+          </div>
+          <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" 
+                  onclick="mostrarModalSubirEvidencia('${reto.id}', '${reto.nombre}')">
+            Subir Evidencia
+          </button>
+        `;
+        contenedor.appendChild(div);
+      });
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
+    }
   }
 
-  function cargarMisEvidencias() {
+  async function cargarMisEvidencias() {
     const contenedor = document.getElementById('misEvidencias');
     contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     
-    google.script.run
-      .withSuccessHandler(function(evidencias) {
-        if (evidencias.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">Aún no has subido evidencias</p>';
-          return;
-        }
-        
-        let html = '<div class="table-container"><table><thead><tr><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th>Observación</th><th>Enlace</th></tr></thead><tbody>';
-        
-        evidencias.forEach(e => {
-          const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
-                            e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
-          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
-          html += `
-            <tr>
-              <td>${e.nombreReto}</td>
-              <td>${tipo}</td>
-              <td>${e.fechaCarga}</td>
-              <td><span class="badge ${badgeClass}">${e.estado}</span></td>
-              <td>${e.observacion || '-'}</td>
-              <td><a href="${e.url}" target="_blank">Ver</a></td>
-            </tr>
-          `;
-        });
-        
-        html += '</tbody></table></div>';
-        contenedor.innerHTML = html;
-      })
-      .getMisEvidencias(usuarioActual.id);
+    try {
+      const evidencias = await callAPI('getMisEvidencias', {
+        idAsociado: usuarioActual.id
+      });
+      
+      if (evidencias.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">Aún no has subido evidencias</p>';
+        return;
+      }
+      
+      let html = '<div class="table-container"><table><thead><tr><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th>Observación</th><th>Enlace</th></tr></thead><tbody>';
+      
+      evidencias.forEach(e => {
+        const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
+                          e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
+        const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+        html += `
+          <tr>
+            <td>${e.nombreReto}</td>
+            <td>${tipo}</td>
+            <td>${e.fechaCarga}</td>
+            <td><span class="badge ${badgeClass}">${e.estado}</span></td>
+            <td>${e.observacion || '-'}</td>
+            <td><a href="${e.url}" target="_blank">Ver</a></td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table></div>';
+      contenedor.innerHTML = html;
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar evidencias</p>';
+    }
   }
 
-  function cargarEvidenciasPendientes() {
+  async function cargarEvidenciasPendientes() {
     const contenedor = document.getElementById('evidenciasPendientes');
     contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     
-    google.script.run
-      .withSuccessHandler(function(evidencias) {
-        if (evidencias.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay evidencias pendientes</p>';
-          return;
-        }
-        
-        let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
-        
-        evidencias.forEach(e => {
-          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
-          html += `
-            <tr>
-              <td>${e.nombreAsociado}</td>
-              <td>${e.nombreReto}</td>
-              <td>${tipo}</td>
-              <td>${e.fechaCarga}</td>
-              <td><a href="${e.url}" target="_blank">Ver evidencia</a></td>
-              <td>
-                <button class="btn btn-warning" style="width: auto; padding: 0.5rem 1rem;" 
-                        onclick="mostrarModalValidarEvidencia('${e.id}', '${e.nombreAsociado}', '${e.nombreReto}', '${e.url}')">
-                  Validar
-                </button>
-              </td>
-            </tr>
-          `;
-        });
-        
-        html += '</tbody></table></div>';
-        contenedor.innerHTML = html;
-      })
-      .getEvidenciasPendientes(usuarioActual.direccion);
+    try {
+      const evidencias = await callAPI('getEvidenciasPendientes', {
+        direccion: usuarioActual.direccion
+      });
+      
+      if (evidencias.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay evidencias pendientes</p>';
+        return;
+      }
+      
+      let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
+      
+      evidencias.forEach(e => {
+        const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+        html += `
+          <tr>
+            <td>${e.nombreAsociado}</td>
+            <td>${e.nombreReto}</td>
+            <td>${tipo}</td>
+            <td>${e.fechaCarga}</td>
+            <td><a href="${e.url}" target="_blank">Ver evidencia</a></td>
+            <td>
+              <button class="btn btn-warning" style="width: auto; padding: 0.5rem 1rem;" 
+                      onclick="mostrarModalValidarEvidencia('${e.id}', '${e.nombreAsociado}', '${e.nombreReto}', '${e.url}')">
+                Validar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table></div>';
+      contenedor.innerHTML = html;
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar evidencias</p>';
+    }
   }
 
-  function cargarRetosGestion() {
+  async function cargarRetosGestion() {
     const contenedor = document.getElementById('retosGestion');
     contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        if (retos.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos creados</p>';
-          return;
-        }
-        
-        contenedor.innerHTML = '';
-        retos.forEach(reto => {
-          if (!reto.esGlobal) {
-            const div = document.createElement('div');
-            div.className = 'card reto-card';
-            div.innerHTML = `
-              <h3>${reto.nombre}</h3>
-              <p>${reto.descripcion}</p>
-              <div class="reto-info">
-                <span class="badge badge-puntaje">${reto.puntaje} pts</span>
-                <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
-              </div>
-              <div class="reto-actions">
-                <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarReto('${reto.id}')">
-                  Editar
-                </button>
-                <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
-                  Desactivar
-                </button>
-              </div>
-            `;
-            contenedor.appendChild(div);
-          }
-        });
-      })
-      .getRetosDireccion(usuarioActual.direccion);
-  }
-
-  function cargarRetosGlobalesGestion() {
-    const contenedor = document.getElementById('retosGlobalesGestion');
-    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        const retosGlobales = retos.filter(r => r.esGlobal);
-        
-        if (retosGlobales.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos globales creados</p>';
-          return;
-        }
-        
-        contenedor.innerHTML = '';
-        retosGlobales.forEach(reto => {
+    try {
+      const retos = await callAPI('getRetosDireccion', {
+        direccion: usuarioActual.direccion
+      });
+      
+      if (retos.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos creados</p>';
+        return;
+      }
+      
+      contenedor.innerHTML = '';
+      retos.forEach(reto => {
+        if (!reto.esGlobal) {
           const div = document.createElement('div');
           div.className = 'card reto-card';
           div.innerHTML = `
-            <h3>${reto.nombre} <span class="badge badge-global">GLOBAL</span></h3>
+            <h3>${reto.nombre}</h3>
             <p>${reto.descripcion}</p>
             <div class="reto-info">
               <span class="badge badge-puntaje">${reto.puntaje} pts</span>
               <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
             </div>
             <div class="reto-actions">
-              <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarRetoGlobal('${reto.id}')">
+              <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarReto('${reto.id}')">
                 Editar
               </button>
               <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
@@ -1385,48 +1277,155 @@
             </div>
           `;
           contenedor.appendChild(div);
-        });
-      })
-      .getTodosLosRetos();
+        }
+      });
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
+    }
   }
 
-  function cargarTodasEvidenciasPendientes() {
+  async function cargarRetosPresidente() {
+    const contenedor = document.getElementById('retosPresidenteGestion');
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    try {
+      const retos = await callAPI('getTodosLosRetos', {});
+      
+      if (retos.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay retos creados</p>';
+        return;
+      }
+
+      contenedor.innerHTML = '';
+      retos.forEach(reto => {
+        const div = document.createElement('div');
+        div.className = 'card reto-card';
+        const tipoLabel = reto.esGlobal
+          ? '<span class="badge badge-global">GLOBAL</span>'
+          : `<span class="badge badge-direccion">${reto.direccion}</span>`;
+
+        div.innerHTML = `
+          <h3>${reto.nombre} ${tipoLabel}</h3>
+          <p>${reto.descripcion}</p>
+          <div class="reto-info">
+            <span class="badge badge-puntaje">${reto.puntaje} pts</span>
+            <span class="badge badge-fecha">${reto.fechaInicio} - ${reto.fechaFin}</span>
+          </div>
+          <div class="reto-actions">
+            <button class="btn btn-edit" onclick="if(!operacionEnProceso) editarRetoPresidente('${reto.id}', ${reto.esGlobal})">
+              Editar
+            </button>
+            <button class="btn btn-danger" onclick="if(!operacionEnProceso) desactivarReto('${reto.id}')">
+              Desactivar
+            </button>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar retos</p>';
+    }
+  }
+
+  async function cargarTodasEvidenciasPendientes() {
     const contenedor = document.getElementById('todasEvidenciasPendientes');
     contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     
-    google.script.run
-      .withSuccessHandler(function(evidencias) {
-        if (evidencias.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay evidencias pendientes</p>';
-          return;
-        }
-        
-        let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
-        
-        evidencias.forEach(e => {
-          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
-          html += `
-            <tr>
-              <td>${e.nombreAsociado}</td>
-              <td>${e.direccion}</td>
-              <td>${e.nombreReto}</td>
-              <td>${tipo}</td>
-              <td>${e.fechaCarga}</td>
-              <td><a href="${e.url}" target="_blank">Ver evidencia</a></td>
-              <td>
-                <button class="btn btn-warning" style="width: auto; padding: 0.5rem 1rem;" 
-                        onclick="mostrarModalValidarEvidencia('${e.id}', '${e.nombreAsociado}', '${e.nombreReto}', '${e.url}')">
-                  Validar
-                </button>
-              </td>
-            </tr>
-          `;
-        });
-        
-        html += '</tbody></table></div>';
-        contenedor.innerHTML = html;
-      })
-      .getTodasLasEvidenciasPendientes();
+    try {
+      const evidencias = await callAPI('getTodasEvidenciasPendientes', {});
+      
+      if (evidencias.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay evidencias pendientes</p>';
+        return;
+      }
+      
+      let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
+      
+      evidencias.forEach(e => {
+        const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+        html += `
+          <tr>
+            <td>${e.nombreAsociado}</td>
+            <td>${e.direccion}</td>
+            <td>${e.nombreReto}</td>
+            <td>${tipo}</td>
+            <td>${e.fechaCarga}</td>
+            <td><a href="${e.url}" target="_blank">Ver evidencia</a></td>
+            <td>
+              <button class="btn btn-warning" style="width: auto; padding: 0.5rem 1rem;" 
+                      onclick="mostrarModalValidarEvidencia('${e.id}', '${e.nombreAsociado}', '${e.nombreReto}', '${e.url}')">
+                Validar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table></div>';
+      contenedor.innerHTML = html;
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar evidencias</p>';
+    }
+  }
+
+  // Las demás funciones siguen el mismo patrón
+  // Reemplazar todas las llamadas google.script.run por callAPI
+  
+  async function cargarDireccionesEnSelect() {
+    try {
+      const direcciones = await callAPI('getDirecciones', {});
+      const select = document.getElementById('destinoReto');
+      select.innerHTML = '<option value="global">Reto Global (todas las direcciones)</option>';
+      direcciones.forEach(d => {
+        select.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+      });
+    } catch (error) {
+      console.error('Error cargando direcciones:', error);
+    }
+  }
+
+  function mostrarModalCrearRetoPresidente() {
+    document.getElementById('tituloModalReto').textContent = 'Crear Nuevo Reto';
+    document.getElementById('btnGuardarReto').textContent = 'Crear Reto';
+    document.getElementById('nombreReto').value = '';
+    document.getElementById('descripcionReto').value = '';
+    document.getElementById('puntajeReto').value = '10';
+    document.getElementById('fechaInicioReto').value = '';
+    document.getElementById('fechaFinReto').value = '';
+    document.getElementById('idRetoEditar').value = '';
+
+    document.getElementById('grupoDestinoReto').style.display = 'block';
+    document.getElementById('destinoReto').value = 'global';
+    cargarDireccionesEnSelect();
+
+    document.getElementById('modalCrearReto').classList.add('show');
+  }
+
+  async function editarRetoPresidente(idReto, esGlobal) {
+    try {
+      const retos = await callAPI('getTodosLosRetos', {});
+      const reto = retos.find(r => r.id === idReto);
+      if (reto) {
+        document.getElementById('tituloModalReto').textContent = 'Editar Reto';
+        document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
+        document.getElementById('nombreReto').value = reto.nombre;
+        document.getElementById('descripcionReto').value = reto.descripcion;
+        document.getElementById('puntajeReto').value = reto.puntaje;
+        document.getElementById('fechaInicioReto').value = convertirFechaParaInput(reto.fechaInicio);
+        document.getElementById('fechaFinReto').value = convertirFechaParaInput(reto.fechaFin);
+        document.getElementById('idRetoEditar').value = idReto;
+
+        document.getElementById('grupoDestinoReto').style.display = 'block';
+        await cargarDireccionesEnSelect();
+        setTimeout(() => {
+          document.getElementById('destinoReto').value = reto.esGlobal ? 'global' : reto.direccion;
+        }, 800);
+
+        document.getElementById('modalCrearReto').classList.add('show');
+      }
+    } catch (error) {
+      console.error('Error editando reto:', error);
+    }
   }
 
   function cambiarTipoRanking(tipo, boton) {
@@ -1440,219 +1439,222 @@
     cargarRanking();
   }
 
-  function cargarRanking() {
+  async function cargarRanking() {
     const contenedor = document.getElementById('rankingContenido');
     contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     
     if (tipoRankingActual === 'capitular') {
-      cargarRankingCapitular(contenedor);
+      await cargarRankingCapitular(contenedor);
     } else if (tipoRankingActual === 'direccion') {
-      cargarRankingDireccion(contenedor);
+      await cargarRankingDireccion(contenedor);
     }
   }
 
-  function cargarRankingCapitular(contenedor) {
-    google.script.run
-      .withSuccessHandler(function(ranking) {
-        let html = '<h3>Ranking por Direcciones</h3>';
+  async function cargarRankingCapitular(contenedor) {
+    try {
+      const ranking = await callAPI('getRankingGeneral', {});
+      let html = '<h3>Ranking por Direcciones</h3>';
+      
+      const rankingDirecciones = await callAPI('getRankingDirecciones', { tipo: 'total' });
+      
+      if (rankingDirecciones.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay datos de ranking</p>';
+        return;
+      }
+      
+      const maxPuntaje = rankingDirecciones[0].puntajeTotal;
+      
+      rankingDirecciones.forEach((item, index) => {
+        const porcentaje = (item.puntajeTotal / maxPuntaje) * 100;
+        let medalClass = '';
+        if (index === 0) medalClass = 'gold';
+        else if (index === 1) medalClass = 'silver';
+        else if (index === 2) medalClass = 'bronze';
         
-        google.script.run
-          .withSuccessHandler(function(rankingDirecciones) {
-            if (rankingDirecciones.length === 0) {
-              contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay datos de ranking</p>';
-              return;
-            }
-            
-            const maxPuntaje = rankingDirecciones[0].puntajeTotal;
-            
-            rankingDirecciones.forEach((item, index) => {
-              const porcentaje = (item.puntajeTotal / maxPuntaje) * 100;
-              let medalClass = '';
-              if (index === 0) medalClass = 'gold';
-              else if (index === 1) medalClass = 'silver';
-              else if (index === 2) medalClass = 'bronze';
-              
-              html += `
-                <div class="ranking-item">
-                  <div class="ranking-position ${medalClass}">${index + 1}</div>
-                  <div class="ranking-info">
-                    <div class="ranking-name">${item.direccion}</div>
-                    <div class="progress-bar-container">
-                      <div class="progress-bar" style="width: ${porcentaje}%">
-                        ${item.puntajeTotal} pts
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            });
-            
-            html += '<h3 style="margin-top: 2rem;">Ranking Individual</h3>';
-            
-            if (ranking.length === 0) {
-              html += '<p style="text-align: center; color: #999;">No hay datos de ranking</p>';
-            } else {
-              html += '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>Dirección</th><th>Puntaje Total</th></tr></thead><tbody>';
-              
-              ranking.slice(0, 20).forEach((item, index) => {
-                html += `
-                  <tr>
-                    <td><strong>${index + 1}</strong></td>
-                    <td>${item.nombre}</td>
-                    <td>${item.direccion}</td>
-                    <td><span class="badge badge-puntaje">${item.puntaje} pts</span></td>
-                  </tr>
-                `;
-              });
-              
-              html += '</tbody></table></div>';
-            }
-            
-            contenedor.innerHTML = html;
-          })
-          .getRankingDirecciones('total');
-      })
-      .getRankingGeneral();
-  }
-
-  function cargarRankingDireccion(contenedor) {
-    const direccion = usuarioActual.direccion;
-
-    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-    google.script.run
-      .withSuccessHandler(function(ranking) {
-        if (ranking.length === 0) {
-          contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay datos de ranking aún en ' + direccion + '</p>';
-          return;
-        }
-
-        const maxPuntaje = ranking[0].puntaje || 1;
-
-        let html = '<h3 style="margin-bottom: 1rem;">' + direccion + '</h3>';
-
-        ranking.forEach((item, index) => {
-          const porcentaje = (item.puntaje / maxPuntaje) * 100;
-          let medalClass = '';
-          if (index === 0) medalClass = 'gold';
-          else if (index === 1) medalClass = 'silver';
-          else if (index === 2) medalClass = 'bronze';
-
-          const esActual = item.nombre === usuarioActual.nombre;
-
-          html += `
-            <div class="ranking-item" style="${esActual ? 'border: 2px solid var(--secondary); background: #e3f2fd;' : ''}">
-              <div class="ranking-position ${medalClass}">${index + 1}</div>
-              <div class="ranking-info">
-                <div class="ranking-name">
-                  ${item.nombre}
-                  ${esActual ? '<span class="badge badge-direccion" style="font-size: 0.7rem; margin-left: 0.5rem;">Tú</span>' : ''}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar" style="width: ${porcentaje}%">
-                    ${item.puntaje} pts
-                  </div>
+        html += `
+          <div class="ranking-item">
+            <div class="ranking-position ${medalClass}">${index + 1}</div>
+            <div class="ranking-info">
+              <div class="ranking-name">${item.direccion}</div>
+              <div class="progress-bar-container">
+                <div class="progress-bar" style="width: ${porcentaje}%">
+                  ${item.puntajeTotal} pts
                 </div>
               </div>
             </div>
-          `;
-        });
-
-        contenedor.innerHTML = html;
-      })
-      .withFailureHandler(function(error) {
-        contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar ranking</p>';
-      })
-      .getRankingPorDireccion(direccion, 'direccion');
-  }
-
-  function cargarEstadisticas() {
-    google.script.run
-      .withSuccessHandler(function(stats) {
-        const contenedor = document.getElementById('estadisticas');
-        contenedor.innerHTML = `
-          <div class="stat-card">
-            <div class="stat-number">${stats.retosActivos}</div>
-            <div class="stat-label">Retos Activos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${stats.totalAsociados}</div>
-            <div class="stat-label">Asociados Activos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${stats.evidenciasPendientes}</div>
-            <div class="stat-label">Evidencias Pendientes</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${stats.evidenciasAprobadas}</div>
-            <div class="stat-label">Evidencias Aprobadas</div>
           </div>
         `;
-      })
-      .getEstadisticasGenerales();
-  }
-
-  function cargarTodosRetos() {
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        const contenedor = document.getElementById('todosRetos');
-        if (retos.length === 0) {
-          contenedor.innerHTML = '<p>No hay retos</p>';
-          return;
-        }
+      });
+      
+      html += '<h3 style="margin-top: 2rem;">Ranking Individual</h3>';
+      
+      if (ranking.length === 0) {
+        html += '<p style="text-align: center; color: #999;">No hay datos de ranking</p>';
+      } else {
+        html += '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>Dirección</th><th>Puntaje Total</th></tr></thead><tbody>';
         
-        let html = '<div class="table-container"><table><thead><tr><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Puntaje</th><th>Fecha Fin</th></tr></thead><tbody>';
-        
-        retos.forEach(r => {
-          const tipo = r.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+        ranking.slice(0, 20).forEach((item, index) => {
           html += `
             <tr>
-              <td>${r.direccion}</td>
-              <td>${r.nombre}</td>
-              <td>${tipo}</td>
-              <td>${r.puntaje} pts</td>
-              <td>${r.fechaFin}</td>
+              <td><strong>${index + 1}</strong></td>
+              <td>${item.nombre}</td>
+              <td>${item.direccion}</td>
+              <td><span class="badge badge-puntaje">${item.puntaje} pts</span></td>
             </tr>
           `;
         });
         
         html += '</tbody></table></div>';
-        contenedor.innerHTML = html;
-      })
-      .getTodosLosRetos();
+      }
+      
+      contenedor.innerHTML = html;
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar ranking</p>';
+    }
   }
 
-  function cargarTodasEvidencias() {
-    google.script.run
-      .withSuccessHandler(function(evidencias) {
-        const contenedor = document.getElementById('todasEvidencias');
-        if (evidencias.length === 0) {
-          contenedor.innerHTML = '<p>No hay evidencias</p>';
-          return;
-        }
-        
-        let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>';
-        
-        evidencias.forEach(e => {
-          const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
-                            e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
-          const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
-          html += `
-            <tr>
-              <td>${e.nombreAsociado}</td>
-              <td>${e.direccion}</td>
-              <td>${e.nombreReto}</td>
-              <td>${tipo}</td>
-              <td>${e.fechaCarga}</td>
-              <td><span class="badge ${badgeClass}">${e.estado}</span></td>
-            </tr>
-          `;
-        });
-        
-        html += '</tbody></table></div>';
-        contenedor.innerHTML = html;
-      })
-      .getTodasLasEvidencias();
+  async function cargarRankingDireccion(contenedor) {
+    const direccion = usuarioActual.direccion;
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    try {
+      const ranking = await callAPI('getRankingPorDireccion', { 
+        direccion: direccion, 
+        tipo: 'direccion' 
+      });
+      
+      if (ranking.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999;">No hay datos de ranking aún en ' + direccion + '</p>';
+        return;
+      }
+
+      const maxPuntaje = ranking[0].puntaje || 1;
+
+      let html = '<h3 style="margin-bottom: 1rem;">' + direccion + '</h3>';
+
+      ranking.forEach((item, index) => {
+        const porcentaje = (item.puntaje / maxPuntaje) * 100;
+        let medalClass = '';
+        if (index === 0) medalClass = 'gold';
+        else if (index === 1) medalClass = 'silver';
+        else if (index === 2) medalClass = 'bronze';
+
+        const esActual = item.nombre === usuarioActual.nombre;
+
+        html += `
+          <div class="ranking-item" style="${esActual ? 'border: 2px solid var(--secondary); background: #e3f2fd;' : ''}">
+            <div class="ranking-position ${medalClass}">${index + 1}</div>
+            <div class="ranking-info">
+              <div class="ranking-name">
+                ${item.nombre}
+                ${esActual ? '<span class="badge badge-direccion" style="font-size: 0.7rem; margin-left: 0.5rem;">Tú</span>' : ''}
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar" style="width: ${porcentaje}%">
+                  ${item.puntaje} pts
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      contenedor.innerHTML = html;
+    } catch (error) {
+      contenedor.innerHTML = '<p style="color: var(--danger);">Error al cargar ranking</p>';
+    }
+  }
+
+  async function cargarEstadisticas() {
+    try {
+      const stats = await callAPI('getEstadisticas', {});
+      const contenedor = document.getElementById('estadisticas');
+      contenedor.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${stats.retosActivos}</div>
+          <div class="stat-label">Retos Activos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${stats.totalAsociados}</div>
+          <div class="stat-label">Asociados Activos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${stats.evidenciasPendientes}</div>
+          <div class="stat-label">Evidencias Pendientes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${stats.evidenciasAprobadas}</div>
+          <div class="stat-label">Evidencias Aprobadas</div>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+    }
+  }
+
+  async function cargarTodosRetos() {
+    try {
+      const retos = await callAPI('getTodosLosRetos', {});
+      const contenedor = document.getElementById('todosRetos');
+      if (retos.length === 0) {
+        contenedor.innerHTML = '<p>No hay retos</p>';
+        return;
+      }
+      
+      let html = '<div class="table-container"><table><thead><tr><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Puntaje</th><th>Fecha Fin</th></tr></thead><tbody>';
+      
+      retos.forEach(r => {
+        const tipo = r.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+        html += `
+          <tr>
+            <td>${r.direccion}</td>
+            <td>${r.nombre}</td>
+            <td>${tipo}</td>
+            <td>${r.puntaje} pts</td>
+            <td>${r.fechaFin}</td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table></div>';
+      contenedor.innerHTML = html;
+    } catch (error) {
+      console.error('Error cargando retos:', error);
+    }
+  }
+
+  async function cargarTodasEvidencias() {
+    try {
+      const evidencias = await callAPI('getTodasEvidencias', {});
+      const contenedor = document.getElementById('todasEvidencias');
+      if (evidencias.length === 0) {
+        contenedor.innerHTML = '<p>No hay evidencias</p>';
+        return;
+      }
+      
+      let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>';
+      
+      evidencias.forEach(e => {
+        const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
+                          e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
+        const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+        html += `
+          <tr>
+            <td>${e.nombreAsociado}</td>
+            <td>${e.direccion}</td>
+            <td>${e.nombreReto}</td>
+            <td>${tipo}</td>
+            <td>${e.fechaCarga}</td>
+            <td><span class="badge ${badgeClass}">${e.estado}</span></td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table></div>';
+      contenedor.innerHTML = html;
+    } catch (error) {
+      console.error('Error cargando evidencias:', error);
+    }
   }
 
   function mostrarModalSubirEvidencia(idReto, nombreReto) {
@@ -1674,68 +1676,31 @@
     document.getElementById('idRetoEditar').value = '';
     document.getElementById('grupoDestinoReto').style.display = 'none';
     document.getElementById('modalCrearReto').classList.add('show');
-    
   }
 
-  function mostrarModalCrearRetoGlobal() {
-    document.getElementById('tituloModalReto').textContent = 'Crear Reto Global';
-    document.getElementById('btnGuardarReto').textContent = 'Crear Reto';
-    document.getElementById('nombreReto').value = '';
-    document.getElementById('descripcionReto').value = '';
-    document.getElementById('puntajeReto').value = '10';
-    document.getElementById('fechaInicioReto').value = '';
-    document.getElementById('fechaFinReto').value = '';
-    document.getElementById('esRetoGlobal').value = 'true';
-    document.getElementById('idRetoEditar').value = '';
-    document.getElementById('modalCrearReto').classList.add('show');
-  }
-
-  function editarReto(idReto) {
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        const reto = retos.find(r => r.id === idReto);
-        if (reto) {
-          document.getElementById('tituloModalReto').textContent = 'Editar Reto';
-          document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
-          document.getElementById('nombreReto').value = reto.nombre;
-          document.getElementById('descripcionReto').value = reto.descripcion;
-          document.getElementById('puntajeReto').value = reto.puntaje;
-          
-          const fechaInicio = convertirFechaParaInput(reto.fechaInicio);
-          const fechaFin = convertirFechaParaInput(reto.fechaFin);
-          
-          document.getElementById('fechaInicioReto').value = fechaInicio;
-          document.getElementById('fechaFinReto').value = fechaFin;
-          document.getElementById('esRetoGlobal').value = 'false';
-          document.getElementById('idRetoEditar').value = idReto;
-          document.getElementById('modalCrearReto').classList.add('show');
-        }
-      })
-      .getRetosDireccion(usuarioActual.direccion);
-  }
-
-  function editarRetoGlobal(idReto) {
-    google.script.run
-      .withSuccessHandler(function(retos) {
-        const reto = retos.find(r => r.id === idReto);
-        if (reto) {
-          document.getElementById('tituloModalReto').textContent = 'Editar Reto Global';
-          document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
-          document.getElementById('nombreReto').value = reto.nombre;
-          document.getElementById('descripcionReto').value = reto.descripcion;
-          document.getElementById('puntajeReto').value = reto.puntaje;
-          
-          const fechaInicio = convertirFechaParaInput(reto.fechaInicio);
-          const fechaFin = convertirFechaParaInput(reto.fechaFin);
-          
-          document.getElementById('fechaInicioReto').value = fechaInicio;
-          document.getElementById('fechaFinReto').value = fechaFin;
-          document.getElementById('esRetoGlobal').value = 'true';
-          document.getElementById('idRetoEditar').value = idReto;
-          document.getElementById('modalCrearReto').classList.add('show');
-        }
-      })
-      .getTodosLosRetos();
+  async function editarReto(idReto) {
+    try {
+      const retos = await callAPI('getRetosDireccion', { direccion: usuarioActual.direccion });
+      const reto = retos.find(r => r.id === idReto);
+      if (reto) {
+        document.getElementById('tituloModalReto').textContent = 'Editar Reto';
+        document.getElementById('btnGuardarReto').textContent = 'Guardar Cambios';
+        document.getElementById('nombreReto').value = reto.nombre;
+        document.getElementById('descripcionReto').value = reto.descripcion;
+        document.getElementById('puntajeReto').value = reto.puntaje;
+        
+        const fechaInicio = convertirFechaParaInput(reto.fechaInicio);
+        const fechaFin = convertirFechaParaInput(reto.fechaFin);
+        
+        document.getElementById('fechaInicioReto').value = fechaInicio;
+        document.getElementById('fechaFinReto').value = fechaFin;
+        document.getElementById('esRetoGlobal').value = 'false';
+        document.getElementById('idRetoEditar').value = idReto;
+        document.getElementById('modalCrearReto').classList.add('show');
+      }
+    } catch (error) {
+      console.error('Error editando reto:', error);
+    }
   }
 
   function convertirFechaParaInput(fechaTexto) {
@@ -1771,7 +1736,7 @@
     }
   }
 
-  function subirEvidencia() {
+  async function subirEvidencia() {
     const url = document.getElementById('urlEvidencia').value.trim();
     
     if (!url) {
@@ -1784,33 +1749,32 @@
     
     deshabilitarBotonesModal('modalSubirEvidencia');
     
-    google.script.run
-      .withSuccessHandler(function(resultado) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalSubirEvidencia');
-        
-        if (resultado.success) {
-          mostrarAlertaEnModal('Evidencia subida exitosamente', 'success');
-          setTimeout(() => {
-            cerrarModal('modalSubirEvidencia');
-            cargarMisEvidencias();
-            cargarRetosDisponibles();
-          }, 1500);
-        } else {
-          mostrarAlertaEnModal('Error: ' + resultado.message, 'error');
-        }
-      })
-      .withFailureHandler(function(error) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalSubirEvidencia');
-        mostrarAlertaEnModal('Error al conectar con el servidor', 'error');
-      })
-      .subirEvidencia({
+    try {
+      const resultado = await callAPI('subirEvidencia', {
         idAsociado: usuarioActual.id,
         nombreAsociado: usuarioActual.nombre,
         idReto: retoSeleccionadoId,
         url: url
       });
+      
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalSubirEvidencia');
+      
+      if (resultado.success) {
+        mostrarAlertaEnModal('Evidencia subida exitosamente', 'success');
+        setTimeout(() => {
+          cerrarModal('modalSubirEvidencia');
+          cargarMisEvidencias();
+          cargarRetosDisponibles();
+        }, 1500);
+      } else {
+        mostrarAlertaEnModal('Error: ' + resultado.message, 'error');
+      }
+    } catch (error) {
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalSubirEvidencia');
+      mostrarAlertaEnModal('Error al conectar con el servidor', 'error');
+    }
   }
 
   function mostrarAlertaEnModal(mensaje, tipo) {
@@ -1825,14 +1789,13 @@
     modal.insertBefore(div, modal.firstChild);
   }
 
-  function crearReto() {
+  async function crearReto() {
     const nombre = document.getElementById('nombreReto').value.trim();
     const descripcion = document.getElementById('descripcionReto').value.trim();
     const puntaje = parseInt(document.getElementById('puntajeReto').value);
     const fechaInicio = document.getElementById('fechaInicioReto').value;
     const fechaFin = document.getElementById('fechaFinReto').value;
 
-    // Si el select de destino está visible, usarlo; si no, usar el hidden esRetoGlobal (para Director)
     let esGlobal, direccion;
     const grupoDestino = document.getElementById('grupoDestinoReto');
     if (grupoDestino && grupoDestino.style.display !== 'none') {
@@ -1853,33 +1816,8 @@
     operacionEnProceso = true;
     deshabilitarBotonesModal('modalCrearReto');
 
-    google.script.run
-      .withSuccessHandler(function(resultado) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalCrearReto');
-
-        if (resultado.success) {
-          mostrarAlertaEnModalReto('Reto creado exitosamente', 'success');
-          setTimeout(() => {
-            cerrarModal('modalCrearReto');
-            if (usuarioActual.rol === 'Presidente') {
-              cargarRetosPresidente();
-            } else if (esGlobal) {
-              cargarRetosGlobalesGestion();
-            } else {
-              cargarRetosGestion();
-            }
-          }, 1500);
-        } else {
-          mostrarAlertaEnModalReto('Error: ' + resultado.message, 'error');
-        }
-      })
-      .withFailureHandler(function(error) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalCrearReto');
-        mostrarAlertaEnModalReto('Error al conectar con el servidor', 'error');
-      })
-      .crearReto({
+    try {
+      const resultado = await callAPI('crearReto', {
         direccion: direccion,
         nombre: nombre,
         descripcion: descripcion,
@@ -1888,6 +1826,30 @@
         fechaFin: fechaFin,
         esGlobal: esGlobal
       });
+      
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalCrearReto');
+
+      if (resultado.success) {
+        mostrarAlertaEnModalReto('Reto creado exitosamente', 'success');
+        setTimeout(() => {
+          cerrarModal('modalCrearReto');
+          if (usuarioActual.rol === 'Presidente') {
+            cargarRetosPresidente();
+          } else if (esGlobal) {
+            cargarRetosGlobalesGestion();
+          } else {
+            cargarRetosGestion();
+          }
+        }, 1500);
+      } else {
+        mostrarAlertaEnModalReto('Error: ' + resultado.message, 'error');
+      }
+    } catch (error) {
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalCrearReto');
+      mostrarAlertaEnModalReto('Error al conectar con el servidor', 'error');
+    }
   }
 
   function mostrarAlertaEnModalReto(mensaje, tipo) {
@@ -1912,7 +1874,7 @@
     }
   }
 
-  function actualizarReto() {
+  async function actualizarReto() {
     const id = document.getElementById('idRetoEditar').value;
     const nombre = document.getElementById('nombreReto').value.trim();
     const descripcion = document.getElementById('descripcionReto').value.trim();
@@ -1940,33 +1902,8 @@
     operacionEnProceso = true;
     deshabilitarBotonesModal('modalCrearReto');
 
-    google.script.run
-      .withSuccessHandler(function(resultado) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalCrearReto');
-
-        if (resultado.success) {
-          mostrarAlertaEnModalReto('Reto actualizado exitosamente', 'success');
-          setTimeout(() => {
-            cerrarModal('modalCrearReto');
-            if (usuarioActual.rol === 'Presidente') {
-              cargarRetosPresidente();
-            } else if (esGlobal) {
-              cargarRetosGlobalesGestion();
-            } else {
-              cargarRetosGestion();
-            }
-          }, 1500);
-        } else {
-          mostrarAlertaEnModalReto('Error: ' + resultado.message, 'error');
-        }
-      })
-      .withFailureHandler(function(error) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalCrearReto');
-        mostrarAlertaEnModalReto('Error al conectar con el servidor', 'error');
-      })
-      .actualizarReto({
+    try {
+      const resultado = await callAPI('actualizarReto', {
         id: id,
         direccion: direccion,
         nombre: nombre,
@@ -1976,9 +1913,33 @@
         fechaFin: fechaFin,
         esGlobal: esGlobal
       });
+      
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalCrearReto');
+
+      if (resultado.success) {
+        mostrarAlertaEnModalReto('Reto actualizado exitosamente', 'success');
+        setTimeout(() => {
+          cerrarModal('modalCrearReto');
+          if (usuarioActual.rol === 'Presidente') {
+            cargarRetosPresidente();
+          } else if (esGlobal) {
+            cargarRetosGlobalesGestion();
+          } else {
+            cargarRetosGestion();
+          }
+        }, 1500);
+      } else {
+        mostrarAlertaEnModalReto('Error: ' + resultado.message, 'error');
+      }
+    } catch (error) {
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalCrearReto');
+      mostrarAlertaEnModalReto('Error al conectar con el servidor', 'error');
+    }
   }
 
-  function validarEvidencia(aprobado) {
+  async function validarEvidencia(aprobado) {
     const observacion = document.getElementById('observacionValidacion').value.trim();
     
     if (!aprobado && !observacion) {
@@ -1991,34 +1952,37 @@
     
     deshabilitarBotonesModal('modalValidarEvidencia');
     
-    google.script.run
-      .withSuccessHandler(function(resultado) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalValidarEvidencia');
-        
-        if (resultado.success) {
-          mostrarAlertaEnModalValidacion(
-            aprobado ? 'Evidencia aprobada exitosamente' : 'Evidencia rechazada', 
-            aprobado ? 'success' : 'info'
-          );
-          setTimeout(() => {
-            cerrarModal('modalValidarEvidencia');
-            if (usuarioActual.rol === 'Presidente') {
-              cargarTodasEvidenciasPendientes();
-            } else {
-              cargarEvidenciasPendientes();
-            }
-          }, 1500);
-        } else {
-          mostrarAlertaEnModalValidacion('Error: ' + resultado.message, 'error');
-        }
-      })
-      .withFailureHandler(function(error) {
-        operacionEnProceso = false;
-        habilitarBotonesModal('modalValidarEvidencia');
-        mostrarAlertaEnModalValidacion('Error al validar evidencia', 'error');
-      })
-      .validarEvidencia(evidenciaSeleccionadaId, aprobado, observacion);
+    try {
+      const resultado = await callAPI('validarEvidencia', {
+        idEvidencia: evidenciaSeleccionadaId,
+        aprobado: aprobado,
+        observacion: observacion
+      });
+      
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalValidarEvidencia');
+      
+      if (resultado.success) {
+        mostrarAlertaEnModalValidacion(
+          aprobado ? 'Evidencia aprobada exitosamente' : 'Evidencia rechazada', 
+          aprobado ? 'success' : 'info'
+        );
+        setTimeout(() => {
+          cerrarModal('modalValidarEvidencia');
+          if (usuarioActual.rol === 'Presidente') {
+            cargarTodasEvidenciasPendientes();
+          } else {
+            cargarEvidenciasPendientes();
+          }
+        }, 1500);
+      } else {
+        mostrarAlertaEnModalValidacion('Error: ' + resultado.message, 'error');
+      }
+    } catch (error) {
+      operacionEnProceso = false;
+      habilitarBotonesModal('modalValidarEvidencia');
+      mostrarAlertaEnModalValidacion('Error al validar evidencia', 'error');
+    }
   }
 
   function mostrarAlertaEnModalValidacion(mensaje, tipo) {
@@ -2038,7 +2002,7 @@
     document.getElementById('modalConfirmarDesactivar').classList.add('show');
   }
 
-  function confirmarDesactivarReto() {
+  async function confirmarDesactivarReto() {
     if (!retoADesactivar) return;
     
     if (operacionEnProceso) return;
@@ -2048,29 +2012,28 @@
     
     cerrarModal('modalConfirmarDesactivar');
     
-    google.script.run
-      .withSuccessHandler(function(resultado) {
-        operacionEnProceso = false;
-        
-        if (resultado.success) {
-          mostrarNotificacion('Reto desactivado exitosamente', 'success');
-          if (usuarioActual.rol === 'Presidente') {
-            cargarRetosGlobalesGestion();
-          } else {
-            cargarRetosGestion();
-          }
-          retoADesactivar = null;
+    try {
+      const resultado = await callAPI('desactivarReto', { idReto: retoADesactivar });
+      
+      operacionEnProceso = false;
+      
+      if (resultado.success) {
+        mostrarNotificacion('Reto desactivado exitosamente', 'success');
+        if (usuarioActual.rol === 'Presidente') {
+          cargarRetosPresidente();
         } else {
-          mostrarNotificacion('Error: ' + resultado.message, 'error');
-          habilitarBotonesModal('modalConfirmarDesactivar');
+          cargarRetosGestion();
         }
-      })
-      .withFailureHandler(function(error) {
-        operacionEnProceso = false;
-        mostrarNotificacion('Error al desactivar reto', 'error');
+        retoADesactivar = null;
+      } else {
+        mostrarNotificacion('Error: ' + resultado.message, 'error');
         habilitarBotonesModal('modalConfirmarDesactivar');
-      })
-      .desactivarReto(retoADesactivar);
+      }
+    } catch (error) {
+      operacionEnProceso = false;
+      mostrarNotificacion('Error al desactivar reto', 'error');
+      habilitarBotonesModal('modalConfirmarDesactivar');
+    }
   }
 
   function mostrarNotificacion(mensaje, tipo) {
