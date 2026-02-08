@@ -1,6 +1,6 @@
 # Plataforma de Retos ANEIAP
 
-Sistema de gestión de retos y evidencias para ANEIAP - Capítulo ICESI.
+Sistema de gestión de retos y evidencias para ANEIAP - Capítulo UNIGUAJIRA
 
 ## 🎨 Paleta de Colores
 
