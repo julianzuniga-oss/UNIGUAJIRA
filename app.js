@@ -17,6 +17,10 @@ const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWo26XX
 // Función auxiliar para llamar al backend
 async function llamarBackend(funcion, ...parametros) {
   try {
+    console.log('Llamando a:', GOOGLE_APPS_SCRIPT_URL);
+    console.log('Función:', funcion);
+    console.log('Parámetros:', parametros);
+    
     const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
       method: 'POST',
       headers: {
@@ -25,16 +29,35 @@ async function llamarBackend(funcion, ...parametros) {
       body: JSON.stringify({
         funcion: funcion,
         parametros: parametros
-      })
+      }),
+      mode: 'cors'
     });
     
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    const contentType = response.headers.get('content-type');
+    console.log('Content-Type:', contentType);
+    
     if (!response.ok) {
-      throw new Error('Error en la comunicación con el servidor');
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error('Error en la comunicación con el servidor: ' + response.status);
     }
     
-    return await response.json();
+    // Verificar si la respuesta es JSON
+    if (!contentType || !contentType.includes('application/json')) {
+      const responseText = await response.text();
+      console.error('Respuesta NO es JSON:', responseText);
+      throw new Error('El servidor no está respondiendo correctamente. Respuesta recibida: ' + responseText.substring(0, 200));
+    }
+    
+    const data = await response.json();
+    console.log('Respuesta del servidor:', data);
+    return data;
+    
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error completo:', error);
     throw error;
   }
 }
