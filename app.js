@@ -12,7 +12,7 @@ let operacionEnProceso = false;
 
 // Configuración de la URL del Web App de Google Apps Script
 // DEBES CAMBIAR ESTO por la URL de tu Web App desplegada
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtdAwIeD5pGjiocrSC9STNu1sRTcEfz_lto4PHhl9P75Wi4E9EVCbFy6PvicAJz1JWrQ/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGEzfztYWpMnE7vdCRV6WpJ2f8w2joQ4xaNyK1lPQYD_SauLv6dzaQcYIn4-Sk71IUDg/exec';
 
 // Función auxiliar para llamar al backend
 async function llamarBackend(funcion, ...parametros) {
