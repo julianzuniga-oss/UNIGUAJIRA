@@ -1,7 +1,3 @@
-// NOTA: Este archivo contiene las funciones del frontend
-// Para que funcione, necesitas configurar el backend en Google Apps Script
-// Consulta el README.md para más información
-
 // Variables globales
 let usuarioActual = null;
 let retoSeleccionadoId = null;
@@ -10,55 +6,75 @@ let tipoRankingActual = 'capitular';
 let retoADesactivar = null;
 let operacionEnProceso = false;
 
-// Configuración de la URL del Web App de Google Apps Script
-// DEBES CAMBIAR ESTO por la URL de tu Web App desplegada
+// IMPORTANTE: Cambia esta URL por la de tu Web App desplegada
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-dtZ81rZsa7WKUGYUV7jfG1bGxU_sZ7xotdVclj7epwueOk8nmw7chJ6VU2KE0pmZVA/exec';
 
-// Función auxiliar para llamar al backend
-async function llamarBackend(funcion, ...parametros) {
-  try {
-    console.log('Llamando a:', GOOGLE_APPS_SCRIPT_URL);
-    console.log('Función:', funcion);
-    console.log('Parámetros:', parametros);
+// Contador para callbacks JSONP únicos
+let jsonpCounter = 0;
+
+// Función auxiliar para llamar al backend usando JSONP (evita CORS completamente)
+function llamarBackend(funcion, ...parametros) {
+  return new Promise((resolve, reject) => {
+    // Crear un nombre único para el callback
+    const callbackName = 'jsonpCallback_' + (jsonpCounter++);
     
-    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        funcion: funcion,
-        parametros: parametros
-      })
+    // Crear la función callback global
+    window[callbackName] = function(data) {
+      // Limpiar
+      delete window[callbackName];
+      document.body.removeChild(script);
+      
+      console.log('Respuesta del servidor:', data);
+      resolve(data);
+    };
+    
+    // Preparar los datos
+    const datos = {
+      funcion: funcion,
+      parametros: parametros
+    };
+    
+    // Crear la URL con parámetros
+    const params = new URLSearchParams({
+      action: funcion,
+      data: JSON.stringify(datos),
+      callback: callbackName
     });
     
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
+    const url = `${GOOGLE_APPS_SCRIPT_URL}?${params.toString()}`;
     
-    const contentType = response.headers.get('content-type');
-    console.log('Content-Type:', contentType);
+    console.log('Llamando a:', url);
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      throw new Error('Error en la comunicación con el servidor: ' + response.status);
-    }
+    // Crear el script tag para JSONP
+    const script = document.createElement('script');
+    script.src = url;
     
-    // Verificar si la respuesta es JSON
-    if (!contentType || !contentType.includes('application/json')) {
-      const responseText = await response.text();
-      console.error('Respuesta NO es JSON:', responseText);
-      throw new Error('El servidor no está respondiendo correctamente. Respuesta recibida: ' + responseText.substring(0, 200));
-    }
+    // Manejar errores
+    script.onerror = function() {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error('Error al cargar el script'));
+    };
     
-    const data = await response.json();
-    console.log('Respuesta del servidor:', data);
-    return data;
+    // Timeout de 30 segundos
+    const timeout = setTimeout(() => {
+      delete window[callbackName];
+      if (script.parentNode) {
+        document.body.removeChild(script);
+      }
+      reject(new Error('Timeout: El servidor no respondió en 30 segundos'));
+    }, 30000);
     
-  } catch (error) {
-    console.error('Error completo:', error);
-    throw error;
-  }
+    // Limpiar el timeout cuando se complete
+    const originalCallback = window[callbackName];
+    window[callbackName] = function(data) {
+      clearTimeout(timeout);
+      originalCallback(data);
+    };
+    
+    // Agregar el script al documento
+    document.body.appendChild(script);
+  });
 }
 
 // Funciones de control de botones
@@ -262,7 +278,6 @@ function cambiarTab(tabId) {
 
 function cargarDatos() {
   // Esta función se llama al iniciar sesión
-  // Las funciones específicas se llaman en cargarDatosTab
 }
 
 function cargarDatosTab(tabId) {
@@ -286,8 +301,6 @@ function cargarDatosTab(tabId) {
   }
 }
 
-// Placeholder para las funciones de carga de datos
-// Estas deberían conectarse con el backend real
 async function cargarRetosDisponibles() {
   const contenedor = document.getElementById('retosDisponibles');
   contenedor.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando retos...</p></div>';
@@ -341,7 +354,7 @@ async function cargarMisEvidencias() {
     evidencias.forEach(e => {
       const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
                         e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
-      const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+      const tipo = e.esRetoGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
       html += `
         <tr>
           <td>${e.nombreReto}</td>
@@ -376,7 +389,7 @@ async function cargarEvidenciasPendientes() {
     let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
     
     evidencias.forEach(e => {
-      const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+      const tipo = e.esRetoGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
       html += `
         <tr>
           <td>${e.nombreAsociado}</td>
@@ -500,7 +513,7 @@ async function cargarTodasEvidenciasPendientes() {
     let html = '<div class="table-container"><table><thead><tr><th>Asociado</th><th>Dirección</th><th>Reto</th><th>Tipo</th><th>Fecha</th><th>Enlace</th><th>Acción</th></tr></thead><tbody>';
     
     evidencias.forEach(e => {
-      const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+      const tipo = e.esRetoGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
       html += `
         <tr>
           <td>${e.nombreAsociado}</td>
@@ -734,7 +747,7 @@ async function cargarTodasEvidencias() {
     evidencias.forEach(e => {
       const badgeClass = e.estado === 'Aprobado' ? 'badge-success' : 
                         e.estado === 'Pendiente' ? 'badge-warning' : 'badge-danger';
-      const tipo = e.esGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
+      const tipo = e.esRetoGlobal ? '<span class="badge badge-global">GLOBAL</span>' : '<span class="badge badge-fecha">DIRECCIÓN</span>';
       html += `
         <tr>
           <td>${e.nombreAsociado}</td>
@@ -993,8 +1006,6 @@ async function crearReto() {
         cerrarModal('modalCrearReto');
         if (usuarioActual.rol === 'Presidente') {
           cargarRetosPresidente();
-        } else if (esGlobal) {
-          cargarRetosGlobalesGestion();
         } else {
           cargarRetosGestion();
         }
@@ -1080,8 +1091,6 @@ async function actualizarReto() {
         cerrarModal('modalCrearReto');
         if (usuarioActual.rol === 'Presidente') {
           cargarRetosPresidente();
-        } else if (esGlobal) {
-          cargarRetosGlobalesGestion();
         } else {
           cargarRetosGestion();
         }
@@ -1173,7 +1182,7 @@ async function confirmarDesactivarReto() {
     if (resultado.success) {
       mostrarNotificacion('Reto desactivado exitosamente', 'success');
       if (usuarioActual.rol === 'Presidente') {
-        cargarRetosGlobalesGestion();
+        cargarRetosPresidente();
       } else {
         cargarRetosGestion();
       }
